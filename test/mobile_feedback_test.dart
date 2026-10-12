@@ -21,6 +21,7 @@ import 'package:EazySupplies/core/themes/app_themes.dart';
 import 'package:EazySupplies/core/utils/notification_content.dart';
 import 'package:EazySupplies/core/utils/product_availability.dart';
 import 'package:EazySupplies/views/cart/cart_page.dart';
+import 'package:EazySupplies/views/menu/menu_page.dart';
 import 'package:EazySupplies/views/cart/checkout_page.dart';
 import 'package:EazySupplies/views/drawer/notification_page.dart';
 
@@ -69,6 +70,13 @@ class FakeApi implements HttpClientAdapter {
         'data': products
             .where((p) => ids.first.isEmpty || ids.contains('${p['id']}'))
             .toList()
+      };
+    } else if (options.path == ApiConfig.categories) {
+      result = {
+        'data': [
+          {'id': 11, 'name': 'Sauces'},
+          {'id': 22, 'name': 'Drinks'}
+        ]
       };
     } else if (options.path.contains('/auth/user')) {
       result = {
@@ -415,6 +423,30 @@ void main() {
     expect(find.text('View order #208'), findsOneWidget);
     expect(api.requests.any((r) => r.method == 'PUT'), true);
   });
+  testWidgets(
+      'category sidebar stays visible and changes product requests in place',
+      (tester) async {
+    api.products.add(productJson(1));
+    await pumpPage(tester, const MenuPage(),
+        size: const Size(320, 640), scale: 1.3);
+    expect(find.text('Sauces'), findsWidgets);
+    expect(find.text('Drinks'), findsOneWidget);
+    expect(
+        api.requests.any((r) =>
+            r.path == ApiConfig.products &&
+            r.queryParameters['category_ids'] == 11),
+        true);
+    await tap(tester, find.text('Drinks'));
+    await settle(tester);
+    expect(
+        api.requests.any((r) =>
+            r.path == ApiConfig.products &&
+            r.queryParameters['category_ids'] == 22),
+        true);
+    expect(find.text('Sauces'), findsOneWidget);
+    expect(find.byType(MenuPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('shopping layouts fit small phones and enlarged text',
       (tester) async {
     api.products.add(productJson(1));
@@ -493,6 +525,8 @@ void main() {
     await capture('products');
     await pumpPage(tester, RepaintBoundary(key: key, child: const CartPage()));
     await capture('cart');
+    await pumpPage(tester, RepaintBoundary(key: key, child: const MenuPage()));
+    await capture('categories');
     expect(tester.takeException(), isNull);
   });
 }

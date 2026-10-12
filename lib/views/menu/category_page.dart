@@ -1,148 +1,207 @@
-import 'package:EazySupplies/core/components/shopping_app_bar.dart';
-import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:flutter/material.dart';
-import 'package:EazySupplies/core/constants/api_config.dart';
-import 'package:EazySupplies/core/models/userModel.dart';
-
-import '../../core/components/app_back_button.dart';
+import '../../core/components/shopping_app_bar.dart';
 import '../../core/components/product_tile_square.dart';
-import '../../core/constants/constants.dart';
-import '../../core/routes/app_routes.dart';
+import '../../core/constants/apiClients.dart';
+import '../../core/constants/api_config.dart';
+import '../../core/models/userModel.dart';
 
 class CategoryProductPage extends StatefulWidget {
+  const CategoryProductPage(
+      {super.key, required this.categoryId, required this.categoryName});
   final int categoryId;
   final String categoryName;
-
-  const CategoryProductPage({
-    super.key,
-    required this.categoryId,
-    required this.categoryName,
-  });
-
   @override
   State<CategoryProductPage> createState() => _CategoryProductPageState();
 }
 
 class _CategoryProductPageState extends State<CategoryProductPage> {
+  List<Category> categories = [];
   List<Product> products = [];
-  bool isLoading = true;
+  late int selectedId;
+  late String selectedName;
+  bool loading = true;
+  bool loadingCategories = true;
+  String? error;
+  bool categoryError = false;
+  int request = 0;
 
   @override
   void initState() {
     super.initState();
-    fetchCategoryProducts();
+    selectedId = widget.categoryId;
+    selectedName = widget.categoryName;
+    loadCategories();
+    if (selectedId > 0) loadProducts();
   }
 
-  Future<void> fetchCategoryProducts() async {
+  Future<void> loadCategories() async {
+    setState(() {
+      loadingCategories = true;
+      categoryError = false;
+    });
     try {
-      final response = await ApiClient.dio.get(ApiConfig.products,
-          queryParameters: {
-            'status': 1,
-            'category_ids': widget.categoryId,
-            'paginate': 100
-          });
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data['data'] ?? [];
-
-        if (!mounted) return;
-        setState(() {
-          products = data.map((e) => Product.fromJson(e)).toList();
-          isLoading = false;
-        });
-      } else {
-        if (!mounted) return;
-        setState(() => isLoading = false);
-        debugPrint('Failed to load category products: ${response.statusCode}');
-      }
-    } catch (e) {
+      final response = await ApiClient.dio.get(ApiConfig.categories);
+      final data = response.data['data'] as List;
+      final available = data
+          .whereType<Map>()
+          .where((item) =>
+              item['status'] == null ||
+              item['status'] == true ||
+              item['status'] == 1 ||
+              item['status'] == '1')
+          .map((item) => Category.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
       if (!mounted) return;
-      setState(() => isLoading = false);
-      debugPrint('Error fetching category products: $e');
+      setState(() {
+        categories = available;
+        loadingCategories = false;
+      });
+      if (selectedId == 0 && categories.isNotEmpty) {
+        select(categories.first);
+      } else if (selectedId == 0) {
+        setState(() => loading = false);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        loadingCategories = false;
+        categoryError = true;
+        if (selectedId == 0) loading = false;
+      });
     }
   }
 
-  Widget _breadcrumbLink(String label, VoidCallback onPressed) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        minimumSize: Size.zero,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-      child: Text(label),
-    );
+  void select(Category category) {
+    setState(() {
+      selectedId = category.id;
+      selectedName = category.name;
+    });
+    loadProducts();
   }
 
-  Widget _buildBreadcrumbs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: AppDefaults.padding),
-      child: Row(
-        children: [
-          _breadcrumbLink(
-            'Home',
-            () => Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.entryPoint,
-              (route) => false,
-            ),
-          ),
-          const Icon(Icons.chevron_right, size: 18),
-          _breadcrumbLink('Categories', () => Navigator.maybePop(context)),
-          const Icon(Icons.chevron_right, size: 18),
-          _breadcrumbLink(widget.categoryName, fetchCategoryProducts),
-        ],
-      ),
-    );
+  Future<void> loadProducts() async {
+    final current = ++request;
+    final categoryId = selectedId;
+    setState(() {
+      loading = true;
+      error = null;
+      products = [];
+    });
+    try {
+      final response =
+          await ApiClient.dio.get(ApiConfig.products, queryParameters: {
+        'status': 1,
+        'category_ids': categoryId,
+        'paginate': 100,
+      });
+      final data = (response.data['data'] as List)
+          .map((item) => Product.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+      if (!mounted || current != request) return;
+      setState(() {
+        products = data;
+        loading = false;
+      });
+    } catch (_) {
+      if (!mounted || current != request) return;
+      setState(() {
+        loading = false;
+        error = 'Unable to load products';
+      });
+    }
   }
+
+  Widget sidebar() => SizedBox(
+        width: 96,
+        child: ColoredBox(
+          color: const Color(0xFFEFF9E9),
+          child: loadingCategories
+              ? const Center(child: CircularProgressIndicator())
+              : ListView(
+                  children: [
+                    const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text('Categories',
+                            style: TextStyle(fontWeight: FontWeight.w700))),
+                    if (categoryError)
+                      TextButton(
+                          onPressed: loadCategories,
+                          child: const Text('Retry categories')),
+                    for (final category in categories)
+                      Semantics(
+                          selected: category.id == selectedId,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              backgroundColor: category.id == selectedId
+                                  ? const Color(0xFF183C2B)
+                                  : Colors.transparent,
+                              foregroundColor: category.id == selectedId
+                                  ? Colors.white
+                                  : const Color(0xFF183C2B),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 16),
+                              shape: const RoundedRectangleBorder(),
+                            ),
+                            onPressed: () => select(category),
+                            child: Text(category.name,
+                                textAlign: TextAlign.center, softWrap: true),
+                          )),
+                  ],
+                ),
+        ),
+      );
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ShoppingAppBar(
-        title: Text(widget.categoryName),
-        leading: const AppBackButton(),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildBreadcrumbs(),
+  Widget build(BuildContext context) => Scaffold(
+        appBar: ShoppingAppBar(title: Text(selectedName)),
+        body: SafeArea(
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          sidebar(),
           Expanded(
-            child: isLoading
+            child: loading
                 ? const Center(child: CircularProgressIndicator())
-                : products.isEmpty
-                    ? const Center(child: Text('No products found'))
-                    : LayoutBuilder(
-                        builder: (context, constraints) {
-                          final crossAxisCount = constraints.maxWidth >= 1200
-                              ? 4
-                              : constraints.maxWidth >= 800
-                                  ? 3
-                                  : 2;
-
-                          return GridView.builder(
-                            padding: const EdgeInsets.all(AppDefaults.padding),
-                            itemCount: products.length,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: crossAxisCount,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
-                              mainAxisExtent: 460 *
-                                  MediaQuery.textScalerOf(context)
-                                      .scale(1)
-                                      .clamp(1, 2),
-                            ),
-                            itemBuilder: (context, index) {
-                              return ProductTileSquare(data: products[index]);
-                            },
-                          );
-                        },
-                      ),
+                : error != null
+                    ? Center(
+                        child:
+                            Column(mainAxisSize: MainAxisSize.min, children: [
+                        Text(error!),
+                        TextButton(
+                            onPressed: loadProducts,
+                            child: const Text('Retry')),
+                      ]))
+                    : products.isEmpty
+                        ? const Center(child: Text('No products found'))
+                        : LayoutBuilder(
+                            builder: (context, constraints) => RefreshIndicator(
+                                  onRefresh: loadProducts,
+                                  child: GridView.builder(
+                                    key: ValueKey(selectedId),
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.all(12),
+                                    itemCount: products.length,
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount:
+                                          constraints.maxWidth >= 800
+                                              ? 3
+                                              : constraints.maxWidth >= 360
+                                                  ? 2
+                                                  : 1,
+                                      mainAxisSpacing: 12,
+                                      crossAxisSpacing: 12,
+                                      mainAxisExtent: 460 *
+                                          MediaQuery.textScalerOf(context)
+                                              .scale(1)
+                                              .clamp(1, 2),
+                                    ),
+                                    itemBuilder: (_, index) =>
+                                        ProductTileSquare(
+                                            data: products[index]),
+                                  ),
+                                )),
           ),
-        ],
-      ),
-    );
-  }
+        ])),
+      );
 }

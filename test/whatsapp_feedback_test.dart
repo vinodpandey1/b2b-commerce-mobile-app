@@ -57,13 +57,17 @@ void main() {
                     Product.fromJson({'id': 2, 'price': 100, 'mrp': 100})))));
     expect(find.textContaining('Save'), findsNothing);
   });
-  testWidgets('billing summary wraps long product names and keeps the amount visible', (tester) async {
+  testWidgets(
+      'billing summary wraps long product names and keeps the amount visible',
+      (tester) async {
     tester.view.physicalSize = const Size(320, 640);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     const name = 'PREMIUM TOMATO KETCHUP SACHETS (10 PACKS X 100 SACHETS)';
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: BillingSummary(checkOutList: const [
+    await tester.pumpWidget(MaterialApp(
+        home: Scaffold(
+            body: BillingSummary(checkOutList: const [
       {'name': name, 'quantity': 2, 'price': 125.5}
     ]))));
     final text = tester.widget<Text>(find.text('$name   x  2'));
@@ -72,5 +76,4 @@ void main() {
     expect(find.text('₹251.00'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
-
 }

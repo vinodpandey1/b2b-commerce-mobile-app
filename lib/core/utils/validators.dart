@@ -42,8 +42,9 @@ class Validators {
     // GST regex: 2 digits state code, 10 chars PAN, 1 char entity, 1 char Z by default, 1 check digit
     final gstRegex = RegExp(
         r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$');
-    if (!gstRegex.hasMatch(value.trim().toUpperCase()))
+    if (!gstRegex.hasMatch(value.trim().toUpperCase())) {
       return 'Enter a valid GST number';
+    }
     return null;
   }
 }
