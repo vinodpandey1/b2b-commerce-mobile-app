@@ -1,3 +1,4 @@
+import '../../core/utils/shop_categories.dart';
 import '../../core/constants/apiClients.dart';
 import '../../core/constants/api_config.dart';
 import '../../core/models/userModel.dart';
@@ -98,10 +99,10 @@ class HomeData {
     return HomeData(
         content: content,
         products: unique.values.toList(),
-        categories: homeList(homeMap(categories)['data'])
+        categories: shopCategories(homeList(homeMap(categories)['data'])
             .where((e) => homeEnabled(homeMap(e)['status']))
             .map((e) => Category.fromJson(homeMap(e)))
-            .toList(),
+            .toList()),
         hasError: hasError);
   }
 }

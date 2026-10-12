@@ -22,6 +22,8 @@ import 'package:EazySupplies/core/utils/notification_content.dart';
 import 'package:EazySupplies/core/utils/product_availability.dart';
 import 'package:EazySupplies/views/cart/cart_page.dart';
 import 'package:EazySupplies/views/menu/menu_page.dart';
+import 'package:EazySupplies/views/menu/category_page.dart';
+import 'package:EazySupplies/core/utils/shop_categories.dart';
 import 'package:EazySupplies/views/cart/checkout_page.dart';
 import 'package:EazySupplies/views/drawer/notification_page.dart';
 
@@ -44,6 +46,10 @@ Product product(int id, {int stock = 200, dynamic status = true}) =>
 class FakeApi implements HttpClientAdapter {
   final requests = <RequestOptions>[];
   final products = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> categories = [
+    {'id': 11, 'name': 'Sauces'},
+    {'id': 22, 'name': 'Drinks'}
+  ];
   bool guest = false;
   bool failOrders = false;
   Completer<void>? orderGate;
@@ -72,12 +78,7 @@ class FakeApi implements HttpClientAdapter {
             .toList()
       };
     } else if (options.path == ApiConfig.categories) {
-      result = {
-        'data': [
-          {'id': 11, 'name': 'Sauces'},
-          {'id': 22, 'name': 'Drinks'}
-        ]
-      };
+      result = {'data': categories};
     } else if (options.path.contains('/auth/user')) {
       result = {
         'data': {'id': guest ? 0 : 1, 'name': 'Test Customer', 'orders': []}
@@ -124,6 +125,10 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await CartStorage.clearCart();
     await CartStorage.getCartItems();
+    api.categories = [
+      {'id': 11, 'name': 'Sauces'},
+      {'id': 22, 'name': 'Drinks'}
+    ];
     api.requests.clear();
     api.products.clear();
     api.guest = false;
@@ -141,7 +146,9 @@ void main() {
   }
 
   Future<void> pumpPage(WidgetTester tester, Widget page,
-      {Size size = const Size(390, 844), double scale = 1}) async {
+      {Size size = const Size(390, 844),
+      double scale = 1,
+      GlobalKey? previewKey}) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -151,7 +158,9 @@ void main() {
         builder: (context, child) => MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear(scale)),
-            child: child!),
+            child: previewKey == null
+                ? child!
+                : RepaintBoundary(key: previewKey, child: child!)),
         home: page,
         onGenerateRoute: (settings) => MaterialPageRoute(
             settings: settings,
@@ -424,12 +433,15 @@ void main() {
     expect(api.requests.any((r) => r.method == 'PUT'), true);
   });
   testWidgets(
-      'category sidebar stays visible and changes product requests in place',
+      'category drawer starts hidden and closes after changing category',
       (tester) async {
     api.products.add(productJson(1));
     await pumpPage(tester, const MenuPage(),
         size: const Size(320, 640), scale: 1.3);
-    expect(find.text('Sauces'), findsWidgets);
+    expect(find.text('Sauces'), findsOneWidget);
+    expect(find.text('Drinks'), findsNothing);
+    await tap(tester, find.text('Categories'));
+    await settle(tester);
     expect(find.text('Drinks'), findsOneWidget);
     expect(
         api.requests.any((r) =>
@@ -443,8 +455,62 @@ void main() {
             r.path == ApiConfig.products &&
             r.queryParameters['category_ids'] == 22),
         true);
-    expect(find.text('Sauces'), findsOneWidget);
+    expect(find.text('Sauces'), findsNothing);
+    expect(find.text('Drinks'), findsOneWidget);
     expect(find.byType(MenuPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  List<Map<String, dynamic>> webCategories() =>
+      (jsonDecode(File('test/fixtures/shop_categories.json')
+              .readAsStringSync())['data'] as List)
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+
+  test(
+      'shopping categories follow the reference names and order, excluding Default',
+      () {
+    final data = webCategories().reversed.map(Category.fromJson);
+    final sorted = shopCategories(data);
+    expect(sorted.map(shopCategoryName), webCategoryNames);
+    expect(sorted.first.id, 21);
+    expect(sorted.any((item) => item.id == 19), false);
+  });
+
+  testWidgets(
+      'opening Categories or a Default route loads the first web category',
+      (tester) async {
+    api.categories = webCategories().reversed.toList();
+    api.products.add(productJson(1));
+    await pumpPage(tester,
+        const CategoryProductPage(categoryId: 19, categoryName: 'DEFAULT'),
+        size: const Size(320, 640), scale: 1.3);
+    expect(find.text('DEFAULT'), findsNothing);
+    expect(find.text('Crushes and Bar Syrups'), findsWidgets);
+    expect(find.text('No products in this category yet'), findsNothing);
+    expect(
+        api.requests
+            .where((r) => r.path == ApiConfig.products)
+            .map((r) => r.queryParameters['category_ids']),
+        [21]);
+    await tap(tester, find.text('Categories'));
+    await settle(tester);
+    expect(find.text('Choose what you need'), findsOneWidget);
+    await tap(tester, find.text('Olive Oils').last);
+    await settle(tester);
+    expect(api.requests.last.queryParameters['category_ids'], 23);
+    expect(find.text('Choose what you need'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an empty category gives a way back to category choices',
+      (tester) async {
+    api.categories = webCategories();
+    await pumpPage(tester, const MenuPage(),
+        size: const Size(320, 640), scale: 1.3);
+    expect(find.text('No products in this category yet'), findsOneWidget);
+    await tap(tester, find.text('Browse categories'));
+    await settle(tester);
+    expect(find.text('Choose what you need'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('shopping layouts fit small phones and enlarged text',
@@ -525,8 +591,13 @@ void main() {
     await capture('products');
     await pumpPage(tester, RepaintBoundary(key: key, child: const CartPage()));
     await capture('cart');
-    await pumpPage(tester, RepaintBoundary(key: key, child: const MenuPage()));
+    api.categories = webCategories();
+    api.products.add(productJson(2));
+    await pumpPage(tester, const MenuPage(), previewKey: key);
     await capture('categories');
+    await tap(tester, find.text('Categories'));
+    await settle(tester);
+    await capture('category-picker');
     expect(tester.takeException(), isNull);
   });
 }

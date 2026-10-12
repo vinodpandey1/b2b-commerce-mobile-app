@@ -1,3 +1,4 @@
+import '../utils/shop_categories.dart';
 import 'package:flutter/material.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
@@ -93,7 +94,7 @@ Future<List<Category>> getCategories() async {
       // 3️⃣ Save locally
       //await LocalStorageService.saveCategories(categories);
 
-      return categories;
+      return shopCategories(categories);
     }
   } catch (e) {
     debugPrint('Category API error: $e');
