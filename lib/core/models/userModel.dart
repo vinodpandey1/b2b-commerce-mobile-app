@@ -571,8 +571,8 @@ class Product {
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'],
-      price: (json['price'] as num?)?.toDouble() ?? 0,
-      stock: json['stock'] ?? 0,
+      price: double.tryParse('${json['price']}') ?? 0,
+      stock: int.tryParse('${json['stock']}') ?? 0,
       categoryId: json['categoryId'],
       brandId: json['brandId'],
       tags: json['tags']?.toString(),
@@ -592,14 +592,18 @@ class Product {
       tax: json['tax'],
       pkgGwt: json['pkgGwt'],
       pkgUnit: json['pkgUnit'],
-      mrp: (json['mrp'] as num?)?.toDouble(),
-      caseRate: (json['caseRate'] as num?)?.toDouble(),
-      unitRate: (json['unitRate'] as num?)?.toDouble(),
+      mrp: double.tryParse('${json['mrp']}'),
+      caseRate: double.tryParse('${json['caseRate']}'),
+      unitRate: double.tryParse('${json['unitRate']}'),
       supplier: json['supplier']?.toString(),
-      status: json['status'] is bool ? json['status'] : json['status'] == 1,
+      status: json['status'] == true ||
+          json['status'] == 1 ||
+          json['status'] == '1' ||
+          json['status'] == 'true',
       jsonData: json['jsonData'], // ✅ LIST SAFE
-      category: Category.fromJson(json['category']),
-      brand: Brand.fromJson(json['brand']),
+      category:
+          Category.fromJson(Map<String, dynamic>.from(json['category'] ?? {})),
+      brand: Brand.fromJson(Map<String, dynamic>.from(json['brand'] ?? {})),
       suppliers: (json['suppliers'] as List<dynamic>? ?? [])
           .map((e) => Supplier.fromJson(e))
           .toList(),
@@ -661,11 +665,11 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      slug: json['slug'] as String,
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
+      id: int.tryParse('${json['id']}') ?? 0,
+      name: json['name']?.toString() ?? '',
+      slug: json['slug']?.toString() ?? '',
+      createdAt: json['createdAt']?.toString() ?? '',
+      updatedAt: json['updatedAt']?.toString() ?? '',
     );
   }
   Map<String, dynamic> toJson() => {
@@ -676,7 +680,7 @@ class Category {
         'updatedAt': updatedAt,
       };
 
-  static empty() {}
+  static void empty() {}
 }
 
 class Brand {
@@ -698,8 +702,8 @@ class Brand {
 
   factory Brand.fromJson(Map<String, dynamic> json) {
     return Brand(
-      id: json['id'] as int,
-      name: json['name'] as String,
+      id: int.tryParse('${json['id']}') ?? 0,
+      name: json['name']?.toString() ?? '',
       slug: json['slug']?.toString() ?? '',
       image: json['image']?.toString(),
       createdAt: json['createdAt']?.toString() ?? '',
@@ -716,7 +720,7 @@ class Brand {
         'updatedAt': updatedAt,
       };
 
-  static empty() {}
+  static void empty() {}
 }
 
 class Supplier {

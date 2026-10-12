@@ -1,7 +1,7 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_credit_card/credit_card_widget.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_defaults.dart';
@@ -23,8 +23,18 @@ class _AddNewCardPageState extends State<AddNewCardPage> {
 
   bool rememberMyCard = false;
 
-  onTextChanged(v) {
+  void onTextChanged(String? v) {
     if (mounted) setState(() {});
+  }
+
+  String get _displayCardNumber {
+    final digits = cardNumber.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return '••••  ••••  ••••  ••••';
+    return digits
+        .padRight(16, '•')
+        .substring(0, 16)
+        .replaceAllMapped(RegExp(r'.{4}'), (match) => '${match.group(0)}  ')
+        .trim();
   }
 
   @override
@@ -48,7 +58,7 @@ class _AddNewCardPageState extends State<AddNewCardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: const AppBackButton(),
         title: const Text('Add New Card'),
       ),
@@ -57,17 +67,73 @@ class _AddNewCardPageState extends State<AddNewCardPage> {
         child: Column(
           children: [
             const SizedBox(height: AppDefaults.padding / 2),
-            CreditCardWidget(
-              cardNumber: cardNumber.text,
-              expiryDate: expireDate.text,
-              cardHolderName: holderName.text,
-              isHolderNameVisible: true,
-              backgroundNetworkImage: 'https://i.imgur.com/AMA5llS.png',
-              cvvCode: cvv.text,
-              showBackView: false,
-              cardType: CardType.visa,
-              onCreditCardWidgetChange: (v) {},
-              isChipVisible: false,
+            Padding(
+              padding: const EdgeInsets.all(AppDefaults.padding),
+              child: AspectRatio(
+                aspectRatio: 1.6,
+                child: Container(
+                  padding: const EdgeInsets.all(AppDefaults.padding),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF183B56), Color(0xFF0B172A)],
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 16,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'EazySupplies',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        _displayCardNumber,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              holderName.text.trim().isEmpty
+                                  ? 'CARD HOLDER'
+                                  : holderName.text.trim().toUpperCase(),
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ),
+                          Text(
+                            expireDate.text.trim().isEmpty
+                                ? 'MM/YY'
+                                : expireDate.text.trim(),
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
             CreditCardForm(
               cardNumber: cardNumber,

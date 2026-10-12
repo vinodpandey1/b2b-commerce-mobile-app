@@ -46,56 +46,24 @@ class UserDashboard extends StatelessWidget {
 
           SizedBox(height: Responsive.hp(context, 8 / 8)),
 
-          /// Counter Section
-          Row(
-            children: [
-              Expanded(
-                child: Card(
-                  elevation: 1,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.shopping_bag,
-                          size: 40,
-                          color: Colors.green,
-                        ),
-                        SizedBox(width: Responsive.wp(context, 16 / 4)),
-                        InkWell(
-                          onTap: () {
-                            // Navigate to your desired page
-                            Navigator.pushNamed(context, AppRoutes.myOrder);
-                          },
-                          borderRadius: BorderRadius.circular(
-                              8), // optional ripple effect
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                totalOrders.toString(),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              SizedBox(height: Responsive.hp(context, 4 / 8)),
-                              const Text(
-                                'Total Orders',
-                                style: TextStyle(color: Colors.green),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: Responsive.hp(context, 24 / 8)),
+          Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Color(0xFFE3EAE5))),
+              child: ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  leading: const Icon(Icons.shopping_bag_outlined,
+                      color: Color(0xFF168345), size: 32),
+                  title: const Text('My orders',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle:
+                      Text('$totalOrders orders • View status and details'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.myOrder))),
+          const SizedBox(height: 24),
 
           /// Account Information
           _sectionCard(

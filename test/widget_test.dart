@@ -10,6 +10,13 @@ void main() {
       expect(ApiConfig.baseUrl, 'https://api.eazysupplies.com/api');
     });
 
+    test('uses the live customer password recovery endpoint', () {
+      expect(
+        ApiConfig.passwordReset,
+        'https://api.eazysupplies.com/api/auth/login_auth',
+      );
+    });
+
     test('encodes product image filenames safely', () {
       final url = buildProductImageUrl('folder/Product image (1).jpg');
       final uri = Uri.parse(url);

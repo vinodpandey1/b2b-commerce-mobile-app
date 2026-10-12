@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'dart:async';
 
 import 'package:EazySupplies/core/constants/apiClients.dart';
@@ -91,7 +92,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         title: const Text('Search Results'),
         leading: const AppBackButton(),
       ),
@@ -139,12 +140,14 @@ class _SearchResultPageState extends State<SearchResultPage> {
                     : GridView.builder(
                         padding:
                             const EdgeInsets.only(top: AppDefaults.padding),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
-                          childAspectRatio: 0.85,
+                          mainAxisExtent: 460 *
+                              MediaQuery.textScalerOf(context)
+                                  .scale(1)
+                                  .clamp(1, 2),
                         ),
                         scrollCacheExtent: const ScrollCacheExtent.pixels(900),
                         itemCount: products.length,

@@ -1,19 +1,23 @@
+import '../constants/app_session.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-
-import '../constants/constants.dart';
+import '../routes/app_routes.dart';
 
 class AppBackButton extends StatelessWidget {
-  /// Custom Back labelLarge with a custom ICON for this app
-  const AppBackButton({
-    super.key,
-  });
-
+  const AppBackButton({super.key});
   @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: SvgPicture.asset(AppIcons.arrowBackward),
-      onPressed: () => Navigator.pop(context),
-    );
-  }
+  Widget build(BuildContext context) => IconButton(
+        tooltip: 'Back',
+        icon: const Icon(Icons.arrow_back_rounded),
+        onPressed: () async {
+          final navigator = Navigator.of(context);
+          if (navigator.canPop()) {
+            navigator.maybePop();
+          } else {
+            await AppSession.startGuestSession();
+            if (!context.mounted) return;
+            navigator.pushNamedAndRemoveUntil(
+                AppRoutes.entryPoint, (_) => false);
+          }
+        },
+      );
 }

@@ -1,8 +1,7 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter/services.dart';
 import 'package:EazySupplies/views/menu/Brand_page.dart';
-import '../../core/constants/app_icons.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_defaults.dart';
@@ -29,8 +28,10 @@ class _EntryPointUIState extends State<EntryPointUI> {
     });
   }
 
-  List<Widget> pages = [
-    const HomePage(),
+  late final List<Widget> pages = [
+    HomePage(
+        onOpenCategories: () => onBottomNavigationTap(1),
+        onOpenAccount: () => onBottomNavigationTap(4)),
     const MenuPage(),
     const CartPage(isHomePage: true),
     const BrandPage(isHomePage: false),
@@ -39,16 +40,14 @@ class _EntryPointUIState extends State<EntryPointUI> {
 
   DateTime? lastBackPressTime;
 
-  Future<bool> _onWillPop() async {
+  Future<void> _onPopInvoked() async {
     if (currentIndex != 0) {
-      // If not on home tab, go to home tab
       setState(() {
         currentIndex = 0;
       });
-      return false; // prevent app from exiting
+      return;
     }
 
-    // If already on home tab, check double press to exit
     final now = DateTime.now();
     if (lastBackPressTime == null ||
         now.difference(lastBackPressTime!) > const Duration(seconds: 2)) {
@@ -56,15 +55,18 @@ class _EntryPointUIState extends State<EntryPointUI> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Press back again to exit")),
       );
-      return false; // prevent exit
+      return;
     }
-    return true; // allow exit
+    await SystemNavigator.pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _onPopInvoked();
+      },
       child: Scaffold(
         body: PageTransitionSwitcher(
           transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
@@ -79,14 +81,6 @@ class _EntryPointUIState extends State<EntryPointUI> {
           duration: AppDefaults.duration,
           child: pages[currentIndex],
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            onBottomNavigationTap(2); // go to cart tab
-          },
-          backgroundColor: AppColors.primary,
-          child: SvgPicture.asset(AppIcons.cart),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         bottomNavigationBar: AppBottomNavigationBar(
           currentIndex: currentIndex,
           onNavTap: onBottomNavigationTap,

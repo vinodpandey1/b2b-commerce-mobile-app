@@ -1,4 +1,4 @@
-package com.example.flutter_upgrde_app
+package com.marksmantech.eazysupplies
 
 import io.flutter.embedding.android.FlutterActivity
 

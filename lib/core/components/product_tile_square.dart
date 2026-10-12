@@ -1,129 +1,100 @@
-import 'package:EazySupplies/core/utils/responsive.dart';
+import 'product_price.dart';
 import 'package:flutter/material.dart';
-import 'package:EazySupplies/core/models/userModel.dart';
-
-import '../constants/constants.dart';
+import '../models/userModel.dart';
 import '../routes/app_routes.dart';
 import '../utils/product_image_url.dart';
 import 'network_image.dart';
+import 'product_cart_controls.dart';
 
 class ProductTileSquare extends StatelessWidget {
-  const ProductTileSquare({
-    super.key,
-    required this.data,
-  });
-
+  const ProductTileSquare({super.key, required this.data});
   final Product data;
-
   @override
   Widget build(BuildContext context) {
-    final imageUrls = buildProductImageUrls(
-      data.productImage,
-      version: data.updatedAt,
-    );
-    final imageUrl = imageUrls.isEmpty ? '' : imageUrls.first;
-    return Material(
-      borderRadius: AppDefaults.borderRadius,
-      color: Colors.white,
-      child: InkWell(
-        borderRadius: AppDefaults.borderRadius,
-        onTap: () => Navigator.pushNamed(
-          context,
-          AppRoutes.productDetails,
-          arguments: data.id,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey.shade200,
-              width: 1,
-            ),
-            borderRadius: AppDefaults.borderRadius,
-            boxShadow: AppDefaults.boxShadow,
-          ),
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Product Image
-              SizedBox(
-                height: Responsive.hp(context, 100 / 8),
-                child: NetworkImageWithLoader(
-                  imageUrl,
-                  fit: BoxFit.contain,
-                ),
+    final urls =
+        buildProductImageUrls(data.productImage, version: data.updatedAt);
+    return LayoutBuilder(
+        builder: (context, constraints) => SizedBox(
+              width: constraints.hasBoundedWidth ? null : 190,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE3EAE5))),
+                child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () => Navigator.pushNamed(
+                                  context, AppRoutes.productDetails,
+                                  arguments: data.id),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(
+                                        height: 96,
+                                        width: double.infinity,
+                                        child: urls.isEmpty
+                                            ? const Icon(
+                                                Icons.inventory_2_outlined,
+                                                color: Colors.grey,
+                                                size: 40)
+                                            : NetworkImageWithLoader(urls.first,
+                                                fit: BoxFit.contain)),
+                                    const SizedBox(height: 10),
+                                    SizedBox(
+                                        height: MediaQuery.textScalerOf(context)
+                                                .scale(14) *
+                                            2 *
+                                            1.3,
+                                        child: Text(data.name,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                height: 1.3))),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                        data.pkgGwt ??
+                                            data.dimension ??
+                                            'View product details',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFF66756B))),
+                                    const SizedBox(height: 8),
+                                    ProductPrice(product: data, fontSize: 16),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                        !data.status
+                                            ? 'Unavailable'
+                                            : data.stock <= 0
+                                                ? 'Out of stock'
+                                                : 'In stock',
+                                        style: TextStyle(
+                                            fontSize: 12,
+                                            color: data.status && data.stock > 0
+                                                ? const Color(0xFF168345)
+                                                : Colors.redAccent)),
+                                  ])),
+                          const SizedBox(height: 10),
+                          if (data.status && data.stock > 0)
+                            ProductCartControls(
+                                key: ValueKey(data.id), product: data)
+                          else
+                            SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton(
+                                    onPressed: null,
+                                    child: const Text('Add to cart'))),
+                        ])),
               ),
-              SizedBox(height: Responsive.hp(context, 8 / 8)),
-
-              // Product Name
-              Text(
-                data.name,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.black, fontSize: Responsive.sp(context, 14)),
-                maxLines: 2,
-                textAlign: TextAlign.left,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: Responsive.hp(context, 4 / 8)),
-
-              // Package weight
-              if ((data.pkgGwt ?? data.dimension) != null)
-                Text(
-                  data.pkgGwt ?? data.dimension ?? "",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(color: Colors.black54),
-                  textAlign: TextAlign.left,
-                ),
-              SizedBox(height: Responsive.hp(context, 6 / 8)),
-
-              // Price Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    '₹${data.price.toStringAsFixed(1)}',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.black,
-                        fontSize: Responsive.sp(context, 16),
-                        fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(width: Responsive.wp(context, 6 / 4)),
-                  if (data.mrp != null && data.mrp! > data.price)
-                    Text(
-                      '₹${data.mrp!.toStringAsFixed(1)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            decoration: TextDecoration.lineThrough,
-                            color: Colors.grey,
-                            fontSize: Responsive.sp(context, 12),
-                          ),
-                    ),
-                ],
-              ),
-              if (data.mrp != null && data.mrp! > data.price) ...[
-                const SizedBox(height: 4),
-                Text(
-                  '${(((data.mrp! - data.price) / data.mrp!) * 100).round()}% OFF',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: const Color(0xFF1B7F4B),
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-              ],
-              if ((data.pkgUnit ?? '').trim().isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text('/${data.pkgUnit}',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(color: Colors.black54)),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
+            ));
   }
 }

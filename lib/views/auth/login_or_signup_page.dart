@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/enums/login_type.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +11,8 @@ class LoginOrSignUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      appBar: ShoppingAppBar(title: const Text('Sign in')),
       body: Column(
         children: [
           Spacer(flex: 2),

@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/enums/login_type.dart';
 import 'package:flutter/material.dart';
 
@@ -14,6 +15,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: ShoppingAppBar(title: const Text('Sign in')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,8 @@ import '../../core/constants/constants.dart';
 //import '../../core/models/product_model.dart';
 
 class NewItemsPage extends StatefulWidget {
-  const NewItemsPage({super.key});
+  const NewItemsPage({super.key, this.title = 'Latest Eats'});
+  final String title;
 
   @override
   State<NewItemsPage> createState() => _NewItemsPageState();
@@ -62,8 +64,8 @@ class _NewItemsPageState extends State<NewItemsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('New Item'),
+      appBar: ShoppingAppBar(
+        title: Text(widget.title),
         leading: const AppBackButton(),
       ),
       body: SafeArea(
@@ -75,10 +77,12 @@ class _NewItemsPageState extends State<NewItemsPage> {
                   ? const Center(child: Text('No new items found'))
                   : GridView.builder(
                       padding: const EdgeInsets.only(top: AppDefaults.padding),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 200,
-                        childAspectRatio: 0.64,
+                        mainAxisExtent: 460 *
+                            MediaQuery.textScalerOf(context)
+                                .scale(1)
+                                .clamp(1, 2),
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 16,
                       ),

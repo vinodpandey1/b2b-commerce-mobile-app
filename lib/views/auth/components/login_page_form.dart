@@ -122,8 +122,6 @@ class _LoginPageFormState extends State<LoginPageForm> {
             break;
           }
       }
-      print("tt");
-      print(payload);
       final response = await ApiClient.dio.post(
         '/auth/login',
         data: payload,
@@ -135,7 +133,8 @@ class _LoginPageFormState extends State<LoginPageForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Logged in successfully!")),
         );
-        Navigator.pushNamed(context, AppRoutes.entryPoint);
+        Navigator.pushNamedAndRemoveUntil(
+            context, AppRoutes.entryPoint, (_) => false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Login failed: ${response.data}")),

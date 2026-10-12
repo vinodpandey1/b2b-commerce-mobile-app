@@ -1,3 +1,4 @@
+import '../utils/shop_categories.dart';
 import 'package:flutter/material.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
@@ -37,6 +38,16 @@ Future<List<Product>> getProducts({
 }) async {
   try {
     final productIds = ids?.where((id) => id > 0).toSet().toList() ?? [];
+    if (ids != null && productIds.isEmpty) return [];
+    if (productIds.length > 100) {
+      final products = <Product>[];
+      for (var offset = 0; offset < productIds.length; offset += 100) {
+        products.addAll(await getProducts(
+            ids: productIds.skip(offset).take(100),
+            rethrowErrors: rethrowErrors));
+      }
+      return products;
+    }
     final response = await ApiClient.dio.get(
       ApiConfig.products,
       queryParameters: {
@@ -83,7 +94,7 @@ Future<List<Category>> getCategories() async {
       // 3️⃣ Save locally
       //await LocalStorageService.saveCategories(categories);
 
-      return categories;
+      return shopCategories(categories);
     }
   } catch (e) {
     debugPrint('Category API error: $e');

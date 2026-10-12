@@ -65,11 +65,12 @@ class _ProductGridViewState extends State<ProductGridView> {
               ? const Center(child: Text('No products found'))
               : GridView.builder(
                   padding: const EdgeInsets.only(top: AppDefaults.padding),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    childAspectRatio: 0.85,
+                    mainAxisExtent: 460 *
+                        MediaQuery.textScalerOf(context).scale(1).clamp(1, 2),
                   ),
                   scrollCacheExtent: const ScrollCacheExtent.pixels(900),
                   itemCount: products.length,

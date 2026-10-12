@@ -8,6 +8,7 @@ class ApiConfig {
   static const String categories = '$baseUrl/categories';
   static const String brands = '$baseUrl/brands';
   static const String login = '$baseUrl/auth/login';
+  static const String passwordReset = '$baseUrl/auth/login_auth';
   static const String tagTogetProduct = '$baseUrl/tags?isAllTagOfProducts=ALL';
   static const String address = '$baseUrl/address/getAddress';
   static const String addressPost = '$baseUrl/address';

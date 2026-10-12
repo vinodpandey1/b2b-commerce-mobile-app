@@ -63,7 +63,7 @@ class OrderPreviewTile extends StatelessWidget {
                         divisions: 3,
                         onChanged: (v) {},
                         activeColor: _orderColor(),
-                        inactiveColor: AppColors.placeholder.withOpacity(0.2),
+                        inactiveColor: AppColors.placeholder.withValues(alpha: 0.2),
                       ),
                     ),
                   ],

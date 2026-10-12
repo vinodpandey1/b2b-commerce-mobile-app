@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
-import 'core/routes/app_routes.dart';
+import 'core/constants/cartStorage.dart';
+import 'core/constants/app_session.dart';
 import 'core/routes/on_generate_route.dart';
 import 'core/themes/app_themes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiClient.init();
+  await CartStorage.getCartItems();
   final bool isLoggedIn = await _checkAuth();
+  final initialRoute = await AppSession.initialRoute(authenticated: isLoggedIn);
 
   runApp(
     MyApp(
-      initialRoute: isLoggedIn ? AppRoutes.entryPoint : AppRoutes.onboarding,
+      initialRoute: initialRoute,
     ),
   );
 }

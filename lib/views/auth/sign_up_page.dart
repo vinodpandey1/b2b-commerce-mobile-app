@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_colors.dart';
@@ -10,7 +11,8 @@ class SignUpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      appBar: ShoppingAppBar(title: const Text('Create account')),
       backgroundColor: AppColors.scaffoldWithBoxBackground,
       body: SafeArea(
         child: Center(

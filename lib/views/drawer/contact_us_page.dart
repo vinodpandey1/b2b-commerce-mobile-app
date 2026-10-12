@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -15,7 +16,7 @@ class ContactUsPage extends StatelessWidget {
     final iconSize = width * 0.07; // scalable icon size
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: const AppBackButton(),
         title: const Text('Contact Us'),
       ),
@@ -47,43 +48,6 @@ class ContactUsPage extends StatelessWidget {
 
               SizedBox(height: padding * 1.5),
 
-              /// Phone Numbers
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SvgPicture.asset(
-                    AppIcons.contactPhone,
-                    width: iconSize,
-                    height: iconSize,
-                  ),
-                  SizedBox(width: padding),
-                  Flexible(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '+757554445544',
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: Colors.black,
-                                  ),
-                        ),
-                        SizedBox(height: padding / 2),
-                        Text(
-                          '+5676543456',
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: Colors.black,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: padding),
-
               /// Email
               Row(
                 children: [
@@ -95,7 +59,7 @@ class ContactUsPage extends StatelessWidget {
                   SizedBox(width: padding),
                   Flexible(
                     child: Text(
-                      'jonarban45@gmail.com',
+                      'info@eazysupplies.com',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Colors.black,
                           ),
@@ -106,19 +70,19 @@ class ContactUsPage extends StatelessWidget {
 
               SizedBox(height: padding),
 
-              /// Address
+              /// Website
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SvgPicture.asset(
-                    AppIcons.contactMap,
+                    AppIcons.dashboardIcon,
                     width: iconSize,
                     height: iconSize,
                   ),
                   SizedBox(width: padding),
                   Flexible(
                     child: Text(
-                      '#123, 1st cross HSR Layout, Bangalore, India',
+                      'https://eazysupplies.com',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Colors.black,
                           ),

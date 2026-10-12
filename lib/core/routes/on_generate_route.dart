@@ -33,7 +33,6 @@ import '../../views/home/order_failed_page.dart';
 import '../../views/home/order_successfull_page.dart';
 import '../../views/home/popular_pack_page.dart';
 import '../../views/home/product_details_page.dart';
-import '../../views/home/search_page.dart';
 import '../../views/home/search_result_page.dart';
 import '../../views/menu/category_page.dart';
 import '../../views/onboarding/onboarding_page.dart';
@@ -41,7 +40,6 @@ import '../../views/profile/address/address_page.dart';
 import '../../views/profile/address/new_address_page.dart';
 import '../../views/profile/coupon/coupon_details_page.dart';
 import '../../views/profile/coupon/coupon_page.dart';
-import '../../views/profile/notification_page.dart';
 import '../../views/profile/order/my_order_page.dart';
 import '../../views/profile/order/order_details.dart';
 import '../../views/profile/payment_method/add_new_card_page.dart';
@@ -65,33 +63,41 @@ class RouteGenerator {
 
     switch (route) {
       case AppRoutes.introLogin:
-        return CupertinoPageRoute(builder: (_) => const IntroLoginPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const IntroLoginPage());
 
       case AppRoutes.onboarding:
-        return CupertinoPageRoute(builder: (_) => const OnboardingPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const OnboardingPage());
 
       case AppRoutes.entryPoint:
-        return CupertinoPageRoute(builder: (_) => const EntryPointUI());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const EntryPointUI());
 
       case AppRoutes.search:
-        return CupertinoPageRoute(builder: (_) => const SearchPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const SearchResultPage());
 
       case AppRoutes.searchResult:
-        return CupertinoPageRoute(builder: (_) => const SearchResultPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const SearchResultPage());
 
       case AppRoutes.cartPage:
-        return CupertinoPageRoute(builder: (_) => const CartPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const CartPage());
 
       case AppRoutes.savePage:
-        return CupertinoPageRoute(builder: (_) => const SavePage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const SavePage());
 
       case AppRoutes.checkoutPage:
         final checkOutList = settings.arguments as List<Map<String, dynamic>>;
         return CupertinoPageRoute(
+            settings: settings,
             builder: (_) => CheckoutPage(checkOutList: checkOutList));
 
       // case AppRoutes.categoryDetails:
-      //   return CupertinoPageRoute(builder: (_) => const CategoryProductPage());
+      //   return CupertinoPageRoute(settings: settings, builder: (_) => const CategoryProductPage());
 
       case AppRoutes.categoryDetails:
         final args = settings.arguments as Map<String, dynamic>?;
@@ -100,6 +106,7 @@ class RouteGenerator {
             args.containsKey('categoryId') &&
             args.containsKey('categoryName')) {
           return CupertinoPageRoute(
+            settings: settings,
             builder: (_) => CategoryProductPage(
               categoryId: args['categoryId'] as int,
               categoryName: args['categoryName'] as String,
@@ -108,6 +115,7 @@ class RouteGenerator {
         } else {
           // Fallback if arguments are missing
           return CupertinoPageRoute(
+            settings: settings,
             builder: (_) => const Scaffold(
               body: Center(child: Text('Category not found')),
             ),
@@ -121,6 +129,7 @@ class RouteGenerator {
             args.containsKey('brandId') &&
             args.containsKey('brandName')) {
           return CupertinoPageRoute(
+            settings: settings,
             builder: (_) => BrandProductPage(
               brandId: args['brandId'] as int,
               brandName: args['brandName'] as String,
@@ -129,6 +138,7 @@ class RouteGenerator {
         } else {
           // Fallback if arguments are missing
           return CupertinoPageRoute(
+            settings: settings,
             builder: (_) => const Scaffold(
               body: Center(child: Text('Brand not found')),
             ),
@@ -137,39 +147,45 @@ class RouteGenerator {
 
       // case AppRoutes.login:
       // final loginType = settings.arguments as String;
-      //   return CupertinoPageRoute(builder: (_) =>  LoginPage(loginType));
+      //   return CupertinoPageRoute(settings: settings, builder: (_) =>  LoginPage(loginType));
 
       case AppRoutes.login:
         final loginType = settings.arguments as LoginType? ?? LoginType.email;
 
         return CupertinoPageRoute(
+          settings: settings,
           builder: (_) => LoginPage(loginType: loginType),
         );
 
       case AppRoutes.signup:
-        return CupertinoPageRoute(builder: (_) => const SignUpPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const SignUpPage());
 
       case AppRoutes.loginOrSignup:
-        return CupertinoPageRoute(builder: (_) => const LoginOrSignUpPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const LoginOrSignUpPage());
 
       case AppRoutes.numberVerification:
         return CupertinoPageRoute(
-            builder: (_) => const NumberVerificationPage());
+            settings: settings, builder: (_) => const NumberVerificationPage());
 
       case AppRoutes.forgotPassword:
-        return CupertinoPageRoute(builder: (_) => const ForgetPasswordPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const ForgetPasswordPage());
 
       case AppRoutes.passwordReset:
         final email = settings.arguments as String? ?? '';
         return CupertinoPageRoute(
+          settings: settings,
           builder: (_) => PasswordResetPage(email: email),
         );
 
       case AppRoutes.newItems:
-        return CupertinoPageRoute(builder: (_) => const NewItemsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const NewItemsPage());
 
       // case AppRoutes.popularItems:
-      //   return CupertinoPageRoute(builder: (_) => const PopularPackPage());
+      //   return CupertinoPageRoute(settings: settings, builder: (_) => const PopularPackPage());
 
       case AppRoutes.popularItems:
         final args = settings.arguments;
@@ -177,11 +193,12 @@ class RouteGenerator {
           throw Exception('TagModel argument is required for PopularPackPage!');
         }
         return CupertinoPageRoute(
+          settings: settings,
           builder: (_) => PopularPackPage(tag: args),
         );
 
       // case AppRoutes.bundleProduct:
-      //   return CupertinoPageRoute(
+      //   return CupertinoPageRoute(settings: settings,
       //       builder: (_) => const BundleProductDetailsPage());
 
       case AppRoutes.bundleProduct:
@@ -202,28 +219,34 @@ class RouteGenerator {
         );
 
       case AppRoutes.bundleDetailsPage:
-        return CupertinoPageRoute(builder: (_) => const BundleDetailsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const BundleDetailsPage());
 
       // case AppRoutes.productDetails:
-      //   return CupertinoPageRoute(builder: (_) => const ProductDetailsPage());
+      //   return CupertinoPageRoute(settings: settings, builder: (_) => const ProductDetailsPage());
 
       case AppRoutes.productDetails:
         final productId = settings.arguments as int; // extract argument
         return CupertinoPageRoute(
+          settings: settings,
           builder: (_) => ProductDetailsPage(productId: productId),
         );
 
       case AppRoutes.createMyPack:
-        return CupertinoPageRoute(builder: (_) => const BundleCreatePage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const BundleCreatePage());
 
       case AppRoutes.orderSuccessfull:
-        return CupertinoPageRoute(builder: (_) => const OrderSuccessfullPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const OrderSuccessfullPage());
 
       case AppRoutes.orderFailed:
-        return CupertinoPageRoute(builder: (_) => const OrderFailedPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const OrderFailedPage());
 
       case AppRoutes.myOrder:
-        return CupertinoPageRoute(builder: (_) => const AllOrderPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const AllOrderPage());
 
       case AppRoutes.orderView:
         final orderData = settings.arguments;
@@ -232,95 +255,121 @@ class RouteGenerator {
           throw Exception('Expected Order argument for OrderViewPage');
         }
         return CupertinoPageRoute(
+          settings: settings,
           builder: (_) => OrderViewPage(orderData: orderData),
         );
 
       case AppRoutes.orderDetails:
-        return CupertinoPageRoute(builder: (_) => const OrderDetailsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const OrderDetailsPage());
 
       case AppRoutes.coupon:
-        return CupertinoPageRoute(builder: (_) => const CouponAndOffersPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const CouponAndOffersPage());
 
       case AppRoutes.couponDetails:
-        return CupertinoPageRoute(builder: (_) => const CouponDetailsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const CouponDetailsPage());
 
       case AppRoutes.profileEdit:
-        return CupertinoPageRoute(builder: (_) => const ProfileEditPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const ProfileEditPage());
 
       case AppRoutes.newAddress:
-        return CupertinoPageRoute(builder: (_) => const NewAddressPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const NewAddressPage());
 
       case AppRoutes.deliveryAddress:
-        return CupertinoPageRoute(builder: (_) => const AddressPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const AddressPage());
 
       case AppRoutes.deliveryWidget:
-        return CupertinoPageRoute(builder: (_) => const AddressWidget());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const AddressWidget());
 
       case AppRoutes.addEditAddressPage:
         final args = settings.arguments;
         return CupertinoPageRoute(
+          settings: settings,
           builder: (_) => AddEditAddressPage(
             existingAddress: args is Address ? args : null,
           ),
         );
 
       case AppRoutes.notifications:
-        return CupertinoPageRoute(builder: (_) => const NotificationPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const NotificationListPage());
 
       case AppRoutes.settingsNotifications:
         return CupertinoPageRoute(
+            settings: settings,
             builder: (_) => const NotificationSettingsPage());
 
       case AppRoutes.settings:
-        return CupertinoPageRoute(builder: (_) => const SettingsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const SettingsPage());
 
       case AppRoutes.settingsLanguage:
-        return CupertinoPageRoute(builder: (_) => const LanguageSettingsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const LanguageSettingsPage());
 
       case AppRoutes.changePassword:
-        return CupertinoPageRoute(builder: (_) => const ChangePasswordPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const ChangePasswordPage());
 
       case AppRoutes.changePhoneNumber:
         return CupertinoPageRoute(
-            builder: (_) => const ChangePhoneNumberPage());
+            settings: settings, builder: (_) => const ChangePhoneNumberPage());
 
       case AppRoutes.review:
-        return CupertinoPageRoute(builder: (_) => const ReviewPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const ReviewPage());
 
       case AppRoutes.submitReview:
-        return CupertinoPageRoute(builder: (_) => const SubmitReviewPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const SubmitReviewPage());
 
       case AppRoutes.drawerPage:
-        return CupertinoPageRoute(builder: (_) => const DrawerPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const DrawerPage());
 
       case AppRoutes.aboutUs:
-        return CupertinoPageRoute(builder: (_) => const AboutUsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const AboutUsPage());
 
       case AppRoutes.termsAndConditions:
         return CupertinoPageRoute(
-            builder: (_) => const TermsAndConditionsPage());
+            settings: settings, builder: (_) => const TermsAndConditionsPage());
 
       case AppRoutes.faq:
-        return CupertinoPageRoute(builder: (_) => const FAQPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const FAQPage());
 
       case AppRoutes.help:
-        return CupertinoPageRoute(builder: (_) => const HelpPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const HelpPage());
 
       case AppRoutes.contactUs:
-        return CupertinoPageRoute(builder: (_) => const ContactUsPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const ContactUsPage());
 
       case AppRoutes.paymentMethod:
-        return CupertinoPageRoute(builder: (_) => const PaymentMethodPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const PaymentMethodPage());
 
       case AppRoutes.paymentCardAdd:
-        return CupertinoPageRoute(builder: (_) => const AddNewCardPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const AddNewCardPage());
 
       case AppRoutes.profilePage:
-        return CupertinoPageRoute(builder: (_) => const ProfilePage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const ProfilePage());
       case AppRoutes.notificationList:
-        return CupertinoPageRoute(builder: (_) => const NotificationListPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const NotificationListPage());
       case AppRoutes.allPaymentPage:
-        return CupertinoPageRoute(builder: (_) => const AllPaymentPage());
+        return CupertinoPageRoute(
+            settings: settings, builder: (_) => const AllPaymentPage());
 
       default:
         return errorRoute();

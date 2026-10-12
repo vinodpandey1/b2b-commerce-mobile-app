@@ -9,19 +9,23 @@ class AppTheme {
     return ThemeData(
       colorSchemeSeed: AppColors.primary,
       fontFamily: "Gilroy",
+      fontFamilyFallback: const ["Roboto"],
       textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: AppColors.placeholder),
-        bodyMedium: TextStyle(color: AppColors.placeholder),
+        bodyLarge: TextStyle(color: Color(0xFF20362A), height: 1.45),
+        bodyMedium: TextStyle(color: Color(0xFF20362A), height: 1.4),
       ),
       scaffoldBackgroundColor: Colors.white,
       brightness: Brightness.light,
       appBarTheme: const AppBarTheme(
-        elevation: 0.3,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(color: Colors.black),
         titleTextStyle: TextStyle(
           color: Colors.black,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w700,
+          fontSize: 20,
           fontFamily: "Gilroy",
         ),
         systemOverlayStyle: SystemUiOverlayStyle(
@@ -33,21 +37,29 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.all(AppDefaults.padding),
+          minimumSize: const Size(0, 48),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: AppDefaults.borderRadius,
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Gilroy',
+              fontFamilyFallback: ['Roboto']),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.all(AppDefaults.padding),
+          minimumSize: const Size(0, 48),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: AppDefaults.borderRadius,
           ),
-          textStyle: const TextStyle(fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Gilroy',
+              fontFamilyFallback: ['Roboto']),
         ),
       ),
       textButtonTheme: TextButtonThemeData(

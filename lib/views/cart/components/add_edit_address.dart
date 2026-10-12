@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'dart:convert';
 
@@ -123,7 +124,7 @@ class _AddEditAddressPageState extends State<AddEditAddressPage> {
     final isEditing = widget.existingAddress != null;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         title: Text(isEditing ? "Edit Address" : "Add Address"),
       ),
       body: Padding(

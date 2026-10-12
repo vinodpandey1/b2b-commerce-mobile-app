@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/constants/apiCall.dart';
 import 'package:flutter/material.dart';
 import 'package:EazySupplies/core/models/userModel.dart';
@@ -28,7 +29,7 @@ class _AllPaymentPageState extends State<AllPaymentPage> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ShoppingAppBar(
           leading: const AppBackButton(),
           title: const Text('My Payments'),
         ),

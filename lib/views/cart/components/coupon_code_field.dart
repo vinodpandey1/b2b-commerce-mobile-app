@@ -17,7 +17,7 @@ class _CouponCodeFieldState extends State<CouponCodeField> {
 
   bool isFilled = false;
 
-  onChange(String? text) {
+  void onChange(String? text) {
     if (text != null && text.isNotEmpty) {
       isFilled = true;
       setState(() {});
@@ -78,7 +78,7 @@ class _CouponCodeFieldState extends State<CouponCodeField> {
                   style: ElevatedButton.styleFrom(
                     foregroundColor: isFilled ? null : AppColors.placeholder,
                     backgroundColor:
-                        isFilled ? null : Colors.grey.withOpacity(0.3),
+                        isFilled ? null : Colors.grey.withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

@@ -1,3 +1,4 @@
+import '../../core/components/cart_action_button.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -78,6 +79,7 @@ class _SearchPageHeader extends StatelessWidget {
       child: Row(
         children: [
           const AppBackButton(),
+          const CartActionButton(),
           SizedBox(width: Responsive.wp(context, 16 / 4)),
           Expanded(
             child: Stack(

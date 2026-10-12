@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -68,7 +69,7 @@ class _CategoryProductPageState extends State<BrandProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         title: Text(widget.brandName),
         leading: const AppBackButton(),
       ),
@@ -90,7 +91,10 @@ class _CategoryProductPageState extends State<BrandProductPage> {
                         crossAxisCount: crossAxisCount,
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 16,
-                        childAspectRatio: 0.68,
+                        mainAxisExtent: 460 *
+                            MediaQuery.textScalerOf(context)
+                                .scale(1)
+                                .clamp(1, 2),
                       ),
                       scrollCacheExtent: const ScrollCacheExtent.pixels(900),
                       itemBuilder: (context, index) {
