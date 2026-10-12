@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import '../../../core/components/app_radio.dart';
@@ -13,7 +14,7 @@ class NewAddressPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.cardColor,
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: const AppBackButton(),
         title: const Text(
           'New Address',

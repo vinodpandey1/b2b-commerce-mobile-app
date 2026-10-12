@@ -49,7 +49,8 @@ class AddressCard extends StatelessWidget {
               children: [
                 AppRadio(isActive: isActive),
                 SizedBox(width: Responsive.wp(context, 16 / 4)),
-                Column(
+                Expanded(
+                    child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -68,17 +69,9 @@ class AddressCard extends StatelessWidget {
                     ),
                     SizedBox(height: Responsive.hp(context, 8 / 8)),
                     // Wrap the address in Expanded to prevent overflow
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width -
-                          120, // adjust padding & radio width
-                      child: Text(
-                        address,
-                        softWrap: true,
-                        overflow: TextOverflow.visible,
-                      ),
-                    ),
+                    Text(address, softWrap: true),
                   ],
-                ),
+                )),
               ],
             ),
           ),

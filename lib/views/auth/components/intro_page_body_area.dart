@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:EazySupplies/core/constants/app_session.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_defaults.dart';
@@ -61,6 +62,16 @@ class IntroPageBodyArea extends StatelessWidget {
                     ),
                     child: const Text('Create an account'),
                   ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () async {
+                    await AppSession.startGuestSession();
+                    if (!context.mounted) return;
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, AppRoutes.entryPoint, (_) => false);
+                  },
+                  child: const Text('Continue as guest'),
                 )
               ],
             ),

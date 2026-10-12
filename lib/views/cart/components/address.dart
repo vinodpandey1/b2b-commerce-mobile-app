@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:EazySupplies/core/constants/apiCall.dart';
@@ -54,7 +55,7 @@ class _AddressWidgetState extends State<AddressWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: BackButton(onPressed: () => Navigator.of(context).pop()),
         title: const Text('My Addresses'),
         actions: [
@@ -166,8 +167,6 @@ class AddressCardView extends StatelessWidget {
   }
 }
 
-
-
 // import 'package:flutter/material.dart';
 // import 'package:EazySupplies/core/constants/apiCall.dart';
 // import 'package:EazySupplies/core/constants/app_colors.dart';
@@ -180,7 +179,7 @@ class AddressCardView extends StatelessWidget {
 
 //   @override
 //   State<AddressWidget> createState() => _AddressWidgetState();
-// } 
+// }
 
 // class _AddressWidgetState extends State<AddressWidget> {
 //   List<Address> addressList = [];
@@ -208,7 +207,7 @@ class AddressCardView extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       appBar: AppBar(
+//       appBar: ShoppingAppBar(
 //         leading: BackButton(
 //           onPressed: () => Navigator.of(context).pop(),
 //         ),
@@ -231,7 +230,7 @@ class AddressCardView extends StatelessWidget {
 //               ? const Center(child: Text("No addresses found."))
 //               : ListView.builder(
 //                   padding: const EdgeInsets.symmetric(vertical: 8),
-//                   itemCount: addressList.length, 
+//                   itemCount: addressList.length,
 //                   itemBuilder: (context, index) {
 //                     final address = addressList[index];
 //                     return AddressCardView(

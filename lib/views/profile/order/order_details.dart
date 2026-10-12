@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/components/app_back_button.dart';
@@ -14,7 +15,7 @@ class OrderDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.cardColor,
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: const AppBackButton(),
         title: const Text('Order Details'),
       ),

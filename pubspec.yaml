@@ -16,7 +16,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+4
+version: 1.0.5+8
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -33,20 +33,20 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^2.0.0
   flutter_svg: ^2.0.10
-  cached_network_image: ^3.4.0
+  cached_network_image: ^4.0.4
   form_field_validator: ^1.1.0
-  animations: ^2.0.11
-  flutter_credit_card: ^3.0.3
+  animations: ^3.0.0
   http: ^1.6.0
   shared_preferences: ^2.5.3
   dio: ^5.4.0
   cookie_jar: ^4.0.8
   dio_cookie_manager: ^3.1.1
   image_picker: ^1.2.1
-  shimmer: ^3.0.0
+  shimmer: ^4.0.0
   flutter_html: ^3.0.0
+  html: 0.15.6
   path_provider: ^2.1.5
   url_launcher: ^6.3.2
   
@@ -59,9 +59,14 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
   flutter_native_splash: ^2.2.3+1
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
+
+# flutter_html 3.0.0 still calls an API removed by html 0.15.7.
+# Keep the latest compatible parser until flutter_html publishes its fix.
+dependency_overrides:
+  html: 0.15.6
 
 flutter_native_splash:
   color: "#ffffff"
@@ -84,10 +89,20 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  fonts:
+    - family: Gilroy
+      fonts:
+        - asset: assets/fonts/Gilroy-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Gilroy-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Gilroy-Bold.ttf
+          weight: 700
 
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
+    - assets/images/home/
     - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see

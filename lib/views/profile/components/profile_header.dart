@@ -1,3 +1,5 @@
+import '../../../core/routes/app_routes.dart';
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
 import 'package:EazySupplies/views/drawer/components/dashboard.dart';
@@ -36,18 +38,15 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Image.asset('assets/images/profile_page_background.png'),
         Column(
           children: [
-            AppBar(
+            ShoppingAppBar(
               title: const Text('Profile'),
               elevation: 0,
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.white,
               automaticallyImplyLeading: true,
-              titleTextStyle: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+              titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: const Color(0xFF20362A), fontWeight: FontWeight.bold),
             ),
             FutureBuilder<User>(
               future: _userFuture,
@@ -70,6 +69,27 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 //   user: snapshot.data!,
                 //   onProfileUpdated: refreshUser, // ✅ key
                 // );
+                if (snapshot.data!.id == 0) {
+                  return Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(children: [
+                        const Icon(Icons.person_outline,
+                            size: 64, color: Color(0xFF168345)),
+                        const SizedBox(height: 16),
+                        const Text('Welcome to EazySupplies',
+                            style: TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.w700)),
+                        const SizedBox(height: 8),
+                        const Text(
+                            'Your guest cart is saved on this device. Sign in to place orders and manage your account.',
+                            textAlign: TextAlign.center),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                            onPressed: () => Navigator.pushNamed(
+                                context, AppRoutes.introLogin),
+                            child: const Text('Sign in or create account'))
+                      ]));
+                }
                 return UserDashboard(
                   name: snapshot.data?.name ?? '',
                   email: snapshot.data?.email ?? '',
@@ -196,7 +216,7 @@ class UserData extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text('Profile Photo')),
+          appBar: ShoppingAppBar(title: const Text('Profile Photo')),
           body: Center(
             child: NetworkImageWithLoader(
               user.profileImagePath != null && user.profileImagePath!.isNotEmpty
@@ -210,7 +230,7 @@ class UserData extends StatelessWidget {
     );
   }
 
-  _editProfileImage(BuildContext context) {
+  void _editProfileImage(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
@@ -380,8 +400,6 @@ void _showUploadingDialog(BuildContext context) {
   );
 }
 
-
-
 // class UserData extends StatelessWidget {
 //   final User user;
 
@@ -435,4 +453,3 @@ void _showUploadingDialog(BuildContext context) {
 //     );
 //   }
 // }
-

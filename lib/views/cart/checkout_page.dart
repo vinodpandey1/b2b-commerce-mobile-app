@@ -1,3 +1,7 @@
+import '../../core/constants/apiCall.dart';
+import '../../core/utils/product_availability.dart';
+import 'components/single_cart_item_tile.dart';
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -25,11 +29,18 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  late final List<Map<String, dynamic>> items;
+  @override
+  void initState() {
+    super.initState();
+    items = widget.checkOutList.map((e) => Map<String, dynamic>.of(e)).toList();
+  }
+
   Address? selectedAddress;
   bool isLoading = false;
   String? _idempotencyKey;
 
-  double get orderAmount => widget.checkOutList.fold<double>(0, (sum, item) {
+  double get orderAmount => items.fold<double>(0, (sum, item) {
         final price = (item['price'] as num?)?.toDouble() ?? 0;
         final quantity = (item['quantity'] as num?)?.toInt() ?? 0;
         return sum + (price * quantity);
@@ -43,6 +54,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   void onAddressSelected(Address address) {
     setState(() {
+      if (selectedAddress?.id != address.id) _idempotencyKey = null;
       selectedAddress = address;
     });
   }
@@ -65,10 +77,52 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
     setState(() => isLoading = true);
     try {
+      if (items.isEmpty) throw StateError('Your cart is empty.');
+      if (_idempotencyKey == null) {
+        final saved = await CartStorage.getCartItems();
+        final savedQuantities = {
+          for (final item in saved) item['id']: item['itemQty']
+        };
+        if (saved.length != items.length ||
+            items.any((item) =>
+                savedQuantities['${item['productId']}'] != item['quantity'])) {
+          throw StateError(
+              'Your cart has changed. Please return to the cart and review it before ordering.');
+        }
+        final freshProducts = await getProducts(
+            ids: items.map((e) => e['productId'] as int), rethrowErrors: true);
+        final byId = {for (final p in freshProducts) p.id: p};
+        bool priceChanged = false;
+        for (final item in items) {
+          final p = byId[item['productId']];
+          final error = cartAvailabilityError(p, item['quantity'] as int);
+          if (error != null) {
+            throw StateError(
+                '${item['name']}: $error. Please update your cart.');
+          }
+          if (item['price'] != p!.price) {
+            item['price'] = p.price;
+            priceChanged = true;
+          }
+          item['product'] = p;
+        }
+        if (priceChanged) {
+          _idempotencyKey = null;
+          throw StateError(
+              'Prices have changed. Please review the updated total and place your order again.');
+        }
+      }
       _idempotencyKey ??= _newIdempotencyKey();
       final payload = {
         "status": "PENDING",
-        "items": widget.checkOutList,
+        "items": items
+            .map((item) => {
+                  'productId': item['productId'],
+                  'quantity': item['quantity'],
+                  'price': item['price'],
+                  'name': item['name']
+                })
+            .toList(),
         "shipping": {
           "address": address.address.trim(),
           "city": address.city.trim(),
@@ -125,6 +179,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         SnackBar(
           content: Text(
             apiMessage ??
+                (e is StateError ? e.message.toString() : null) ??
                 'We could not place the order. Your cart is still saved; please try again.',
           ),
         ),
@@ -134,27 +189,86 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
+  Future<void> updateQuantity(String id, int qty) async {
+    if (isLoading) return;
+    final index = items.indexWhere((item) => '${item['productId']}' == id);
+    if (index < 0) return;
+    final item = items[index];
+    final previous = Map<String, dynamic>.of(item);
+    setState(() {
+      isLoading = true;
+      _idempotencyKey = null;
+      if (qty == 0) {
+        items.removeAt(index);
+      } else {
+        item['quantity'] = qty;
+      }
+    });
+    try {
+      await CartStorage.setQuantity(id, qty,
+          maxQuantity: item['product'] is Product
+              ? purchaseLimit(item['product'] as Product)
+              : 100);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        if (qty == 0) {
+          items.insert(index, previous);
+        } else {
+          items[index] = previous;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Quantity could not be saved. Please try again.')));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: const AppBackButton(),
         title: const Text('Checkout'),
       ),
+      bottomNavigationBar: SafeArea(
+          child: PayNowButton(
+              selectedAddress: items.isEmpty ? null : selectedAddress,
+              placeOrder: placeOrder,
+              isLoading: isLoading)),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            AddressSelector(
-              onAddressSelected: onAddressSelected,
-            ),
-            BillingSummary(
-              checkOutList: widget.checkOutList,
-            ),
-            PayNowButton(
-                selectedAddress: selectedAddress,
-                placeOrder: () => placeOrder(),
-                isLoading: isLoading),
-            const Text('Happy Shopping'),
+            IgnorePointer(
+                ignoring: isLoading,
+                child: AddressSelector(onAddressSelected: onAddressSelected)),
+            Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Review your order',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 12),
+                      for (final item in items)
+                        SingleCartItemTile(
+                            productId: '${item['productId']}',
+                            name: item['name'] as String,
+                            quantity: item['quantity'] as int,
+                            price: (item['price'] as num).toDouble(),
+                            imageUrl:
+                                (item['product'] as Product?)?.productImage ??
+                                    '',
+                            maximum: item['product'] is Product
+                                ? purchaseLimit(item['product'] as Product)
+                                : 100,
+                            saving: isLoading,
+                            onRemove: (id) => updateQuantity(id, 0),
+                            onQuantityChanged: updateQuantity),
+                    ])),
+            BillingSummary(checkOutList: items),
             const SizedBox(height: 20),
           ],
         ),
@@ -237,9 +351,10 @@ class BillingSummary extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '${item['name']}   x  $quantity',
-                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
                     ),
                   ),
+                  const SizedBox(width: 12),
                   Text('₹${(price * quantity).toStringAsFixed(2)}'),
                 ],
               ),

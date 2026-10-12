@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
 import 'package:dio/dio.dart';
@@ -162,7 +163,7 @@ class _OrderViewPageState extends State<OrderViewPage> {
     final payment = widget.orderData.payment;
     debugPrint('........$selectedPaymentMethodId');
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         title: Text('Order #${widget.orderData.id}'),
       ),
       body: SingleChildScrollView(
@@ -435,7 +436,7 @@ class _OrderViewPageState extends State<OrderViewPage> {
 //     final note = orderData.jsonData?['note'] ?? '';
 
 //     return Scaffold(
-//       appBar: AppBar(
+//       appBar: ShoppingAppBar(
 //         title: Text('order #${orderData.id}'),
 //       ),
 //       body: SingleChildScrollView(

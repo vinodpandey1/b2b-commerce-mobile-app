@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/components/app_back_button.dart';
 import '../../core/constants/apiClients.dart';
+import '../../core/constants/api_config.dart';
 import '../../core/constants/constants.dart';
 import '../../core/enums/login_type.dart';
 import '../../core/routes/app_routes.dart';
@@ -64,14 +65,13 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
 
     setState(() => _isLoading = true);
     try {
-      final response = await ApiClient.dio.post(
-        '/auth/password-reset',
-        data: {
-          'action': 'reset',
+      final response = await ApiClient.dio.get(
+        ApiConfig.passwordReset,
+        queryParameters: {
+          'action': 'forgotPassword',
           'email': widget.email,
           'otp': _otpController.text.trim(),
           'password': _passwordController.text,
-          'audience': 'customer',
         },
       );
 
@@ -103,12 +103,11 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
   Future<void> _resendCode() async {
     setState(() => _isResending = true);
     try {
-      final response = await ApiClient.dio.post(
-        '/auth/password-reset',
-        data: {
-          'action': 'request',
+      final response = await ApiClient.dio.get(
+        ApiConfig.passwordReset,
+        queryParameters: {
+          'action': 'forgetpasswordotp',
           'email': widget.email,
-          'audience': 'customer',
         },
       );
       if (!mounted) return;

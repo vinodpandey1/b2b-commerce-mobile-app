@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/components/app_back_button.dart';
 import '../../core/constants/apiClients.dart';
+import '../../core/constants/api_config.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_defaults.dart';
 import '../../core/routes/app_routes.dart';
@@ -47,12 +48,11 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await ApiClient.dio.post(
-        '/auth/password-reset',
-        data: {
-          'action': 'request',
+      final response = await ApiClient.dio.get(
+        ApiConfig.passwordReset,
+        queryParameters: {
+          'action': 'forgetpasswordotp',
           'email': email,
-          'audience': 'customer',
         },
       );
 

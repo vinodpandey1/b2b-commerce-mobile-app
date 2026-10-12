@@ -1,3 +1,4 @@
+import '../../core/components/shopping_app_bar.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/constants/constants.dart';
@@ -9,8 +10,9 @@ class IntroLoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Stack(
+    return Scaffold(
+      appBar: ShoppingAppBar(title: const Text('Welcome'), showCart: false),
+      body: const Stack(
         children: [
           IntroLoginBackgroundWrapper(imageURL: AppImages.introBackground1),
           IntroPageBodyArea(),

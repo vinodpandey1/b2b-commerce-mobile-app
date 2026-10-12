@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -14,7 +15,7 @@ class HelpPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: const AppBackButton(),
         title: const Text('Help'),
       ),

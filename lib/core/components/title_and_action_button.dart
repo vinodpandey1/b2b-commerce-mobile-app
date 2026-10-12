@@ -23,20 +23,17 @@ class TitleAndActionButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title.length > 30
-                ? '${title.substring(0, 25).toUpperCase()} ...'
-                : title,
-            style: isHeadline
-                ? Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(color: Colors.black)
-                : Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.copyWith(color: Colors.black),
-          ),
+          Expanded(
+              child: Text(title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: (isHeadline
+                          ? Theme.of(context).textTheme.headlineSmall
+                          : Theme.of(context).textTheme.titleMedium)
+                      ?.copyWith(
+                          color: const Color(0xFF20362A),
+                          fontWeight: FontWeight.w700))),
+          const SizedBox(width: 8),
           TextButton(
             onPressed: onTap,
             child: Text(actionLabel ?? 'View All'),

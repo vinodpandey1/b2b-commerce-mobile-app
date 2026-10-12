@@ -1,231 +1,114 @@
-import 'package:EazySupplies/core/constants/apiClients.dart';
-import 'package:EazySupplies/core/utils/responsive.dart';
-import 'package:dio/dio.dart';
+import '../../core/components/product_price.dart';
 import 'package:flutter/material.dart';
-import 'package:EazySupplies/core/constants/cartStorage.dart';
-import 'package:EazySupplies/core/models/userModel.dart';
-
-import '../../core/components/app_back_button.dart';
-import '../../core/components/buy_now_row_button.dart';
-import '../../core/components/price_and_quantity.dart';
-import '../../core/components/product_images_slider.dart';
-import '../../core/components/review_row_button.dart';
-import '../../core/constants/app_defaults.dart';
-import '../../core/constants/api_config.dart';
-import '../../core/utils/product_image_url.dart';
-import 'components/bundle_meta_data.dart';
 import 'package:flutter_html/flutter_html.dart';
+import '../../core/components/shopping_app_bar.dart';
+import '../../core/components/product_cart_controls.dart';
+import '../../core/components/product_images_slider.dart';
+import '../../core/constants/apiClients.dart';
+import '../../core/constants/api_config.dart';
+import '../../core/models/userModel.dart';
+import '../../core/utils/product_image_url.dart';
 
 class ProductDetailsPage extends StatefulWidget {
-  final int productId; // receive productId
-
   const ProductDetailsPage({super.key, required this.productId});
-
+  final int productId;
   @override
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   Product? product;
-  bool isLoading = true;
-  int quantity = 1;
+  bool loading = true;
   @override
   void initState() {
     super.initState();
-    fetchProductDetails();
-    _loadCartQuantity();
+    fetchProduct();
   }
 
-  Future<void> fetchProductDetails() async {
+  Future<void> fetchProduct() async {
+    if (mounted) setState(() => loading = true);
     try {
-      final response = await ApiClient.dio.get(
-        ApiConfig.products,
-        queryParameters: {
-          "productId": widget.productId,
-        },
-      );
-
-      if (!mounted) return;
-      setState(() {
-        product = Product.fromJson(
-          Map<String, dynamic>.from(response.data['data']),
-        );
-        isLoading = false;
-      });
-    } on DioException catch (e) {
-      if (!mounted) return;
-      setState(() => isLoading = false);
-      debugPrint('Dio error: ${e.message}');
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => isLoading = false);
-      debugPrint('Unexpected error: $e');
-    }
-  }
-
-  void onQuantityChanged(int newQuantity) {
-    setState(() {
-      quantity = newQuantity; // update parent
-    });
-  }
-
-  Future<void> _loadCartQuantity() async {
-    final id = widget.productId.toString();
-    final existingQty = await CartStorage.getItemQty(id);
-
-    if (mounted && existingQty > 0) {
-      setState(() {
-        quantity = existingQty;
-      });
+      final response = await ApiClient.dio.get(ApiConfig.products,
+          queryParameters: {'productId': widget.productId});
+      final result =
+          Product.fromJson(Map<String, dynamic>.from(response.data['data']));
+      if (mounted) setState(() => product = result);
+    } catch (_) {
+      if (mounted) setState(() => product = null);
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageUrls = buildProductImageUrls(
-      product?.productImage,
-      version: product?.updatedAt,
-    );
-
+    final item = product;
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        leading: const AppBackButton(),
-        title: const Text('Product Details'),
-      ),
-      bottomNavigationBar: product == null
+      appBar: ShoppingAppBar(title: const Text('Product details')),
+      bottomNavigationBar: item == null
           ? null
           : SafeArea(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: AppDefaults.padding),
-                child: BuyNowRow(
-                  onBuyButtonTap: () {},
-                  //onCartButtonTap: () {},
-                  onCartButtonTap: () async {
-                    final id = product?.id.toString();
-                    if (id == null) return;
-                    final wasInCart = await CartStorage.isInCart(id);
-                    if (wasInCart) {
-                      await CartStorage.updateCartQty(id, quantity);
-                    } else {
-                      await CartStorage.addToCart(id, quantity);
-                    }
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(wasInCart
-                            ? 'Cart quantity updated to $quantity'
-                            : '$quantity item(s) added to cart'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-      body: isLoading
+              child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border:
+                          Border(top: BorderSide(color: Color(0xFFE3EAE5)))),
+                  child: ProductCartControls(product: item))),
+      body: loading
           ? const Center(child: CircularProgressIndicator())
-          : product == null
-              ? const Center(child: Text('Product not found'))
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      ProductImagesSlider(
-                        images: imageUrls,
-                      ),
-                      //   product!.productImage ??
-                      //       [product!.productImage ?? ""],
-                      // ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Padding(
-                          padding: const EdgeInsets.all(AppDefaults.padding),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product!.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                  'Weight: ${product!.pkgGwt ?? product!.dimension ?? "-"}'),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppDefaults.padding),
-                        child: PriceAndQuantityRow(
-                          currentPrice: product!.price,
-                          orginalPrice: product!.mrp ?? product!.price,
-                          quantity: quantity,
-                          onQuantityIncrease: () =>
-                              onQuantityChanged(quantity + 1),
-                          onQuantityDecrease: () {
-                            if (quantity > 1) onQuantityChanged(quantity - 1);
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDefaults.padding,
-                        ),
-                        child: BundleMetaData(
-                          category: product!.category.name,
-                          brand: product!.brand.name,
-                          brandImage: product!.brand.image,
-                          stock: product!.stock,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(AppDefaults.padding),
-                        child: Column(
+          : item == null
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  const Text('We could not load this product.'),
+                  TextButton(
+                      onPressed: fetchProduct, child: const Text('Try again'))
+                ]))
+              : ListView(children: [
+                  ProductImagesSlider(
+                      images: buildProductImageUrls(item.productImage,
+                          version: item.updatedAt)),
+                  Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Product Details',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                            ),
+                            Text(item.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w700)),
                             const SizedBox(height: 8),
+                            Text(item.pkgGwt ?? item.dimension ?? '',
+                                style: Theme.of(context).textTheme.bodyMedium),
+                            const SizedBox(height: 16),
+                            ProductPrice(product: item, fontSize: 26),
+                            const SizedBox(height: 10),
+                            Text(
+                                !item.status
+                                    ? 'Unavailable'
+                                    : item.stock <= 0
+                                        ? 'Out of stock'
+                                        : '${item.stock} in stock',
+                                style: TextStyle(
+                                    color: item.status && item.stock > 0
+                                        ? const Color(0xFF168345)
+                                        : Colors.redAccent,
+                                    fontWeight: FontWeight.w600)),
+                            const Divider(height: 32),
+                            if (item.brand.name.isNotEmpty)
+                              Text('Brand: ${item.brand.name}'),
+                            if (item.category.name.isNotEmpty)
+                              Text('Category: ${item.category.name}'),
+                            const SizedBox(height: 20),
+                            const Text('About this product',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w700)),
                             Html(
-                              data: product!.description ??
-                                  "No description available.",
-                              style: {
-                                "body": Style(
-                                  fontSize:
-                                      FontSize(Responsive.sp(context, 14)),
-                                ),
-                              },
-                            )
-                          ],
-                        ),
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: AppDefaults.padding),
-                        child: Column(
-                          children: [
-                            Divider(thickness: 0.1),
-                            ReviewRowButton(totalStars: 0),
-                            Divider(thickness: 0.1),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                                data: item.description ??
+                                    'No description available.'),
+                          ])),
+                ]),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
@@ -57,7 +58,7 @@ class _AllOrderPageState extends State<AllOrderPage> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: ShoppingAppBar(
           leading: const AppBackButton(),
           title: const Text('My Order'),
         ),

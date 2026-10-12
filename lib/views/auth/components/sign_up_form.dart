@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../core/constants/constants.dart';
@@ -31,6 +30,8 @@ class _SignUpFormState extends State<SignUpForm> {
   final gstCtrl = TextEditingController();
 
   bool loading = false;
+  bool hidePassword = true;
+  bool hideConfirmation = true;
 
   @override
   void dispose() {
@@ -104,6 +105,7 @@ class _SignUpFormState extends State<SignUpForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Container(
         margin: const EdgeInsets.all(AppDefaults.margin),
         padding: const EdgeInsets.all(AppDefaults.padding),
@@ -161,15 +163,23 @@ class _SignUpFormState extends State<SignUpForm> {
             const SizedBox(height: 8),
             TextFormField(
               controller: passwordCtrl,
-              validator: Validators.password.call,
-              obscureText: true,
+              validator: Validators.registrationPassword,
+              obscureText: hidePassword,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
+                helperText:
+                    'Use at least 6 characters, including a symbol (# ? ! @ \$ % ^ & * -).',
+                helperMaxLines: 3,
+                errorMaxLines: 3,
                 suffixIcon: Material(
                   color: Colors.transparent,
                   child: IconButton(
-                    onPressed: () {},
-                    icon: SvgPicture.asset(AppIcons.eye, width: 24),
+                    tooltip: hidePassword ? 'Show password' : 'Hide password',
+                    onPressed: () =>
+                        setState(() => hidePassword = !hidePassword),
+                    icon: Icon(hidePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined),
                   ),
                 ),
               ),
@@ -180,15 +190,25 @@ class _SignUpFormState extends State<SignUpForm> {
             const SizedBox(height: 8),
             TextFormField(
               controller: confirmPasswordCtrl,
-              validator: Validators.required.call,
-              obscureText: true,
+              validator: (value) => value == null || value.isEmpty
+                  ? 'Confirm your password'
+                  : value != passwordCtrl.text
+                      ? 'Passwords do not match'
+                      : null,
+              obscureText: hideConfirmation,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                 suffixIcon: Material(
                   color: Colors.transparent,
                   child: IconButton(
-                    onPressed: () {},
-                    icon: SvgPicture.asset(AppIcons.eye, width: 24),
+                    tooltip: hideConfirmation
+                        ? 'Show confirmation password'
+                        : 'Hide confirmation password',
+                    onPressed: () =>
+                        setState(() => hideConfirmation = !hideConfirmation),
+                    icon: Icon(hideConfirmation
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined),
                   ),
                 ),
               ),

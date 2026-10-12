@@ -14,6 +14,15 @@ class Validators {
     )
   ]);
 
+  static String? registrationPassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    if (value.length < 6) return 'Use at least 6 characters';
+    if (!RegExp(r'[#?!@$%^&*-]').hasMatch(value)) {
+      return 'Include at least one symbol: # ? ! @ \$ % ^ & * -';
+    }
+    return null;
+  }
+
   /// Required Validator with Optional Field Name
   static RequiredValidator requiredWithFieldName(String? fieldName) =>
       RequiredValidator(errorText: '${fieldName ?? 'Field'} is required');
@@ -33,7 +42,8 @@ class Validators {
     // GST regex: 2 digits state code, 10 chars PAN, 1 char entity, 1 char Z by default, 1 check digit
     final gstRegex = RegExp(
         r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}[Z]{1}[A-Z0-9]{1}$');
-    if (!gstRegex.hasMatch(value)) return 'Enter a valid GST number';
+    if (!gstRegex.hasMatch(value.trim().toUpperCase()))
+      return 'Enter a valid GST number';
     return null;
   }
 }

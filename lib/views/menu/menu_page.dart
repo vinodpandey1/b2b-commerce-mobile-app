@@ -1,3 +1,4 @@
+import '../../core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -28,11 +29,13 @@ class _MenuPageState extends State<MenuPage> {
   Future<void> fetchCategories() async {
     try {
       final data = await getCategories(); // fetch from API or local
+      if (!mounted) return;
       setState(() {
         categories = data;
         isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => isLoading = false);
       debugPrint('Error fetching categories: $e');
     }
@@ -40,13 +43,9 @@ class _MenuPageState extends State<MenuPage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        //Navigator.pushAndRemoveUntil(context, AppRoutes.entryPoint, (route)=> false)
-        Navigator.pushNamed(context, AppRoutes.entryPoint);
-        return false;
-      },
-      child: SafeArea(
+    return Scaffold(
+      appBar: ShoppingAppBar(title: const Text('Categories')),
+      body: SafeArea(
         child: Column(
           children: [
             SizedBox(height: Responsive.hp(context, 32 / 8)),
@@ -73,7 +72,8 @@ class _MenuPageState extends State<MenuPage> {
                             childAspectRatio:
                                 0.8, // makes tile taller if needed
                           ),
-                          scrollCacheExtent: const ScrollCacheExtent.pixels(900),
+                          scrollCacheExtent:
+                              const ScrollCacheExtent.pixels(900),
                           itemCount: categories.length,
                           itemBuilder: (context, index) {
                             final category = categories[index];

@@ -1,9 +1,10 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/constants/apiCall.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
-import 'package:EazySupplies/core/constants/api_config.dart';
 import 'package:EazySupplies/core/models/userModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/components/app_back_button.dart';
 import '../../core/constants/app_defaults.dart';
@@ -29,15 +30,23 @@ class _DrawerPageState extends State<DrawerPage> {
 
   void refreshUser() {
     setState(() {
-      _futureUser:
-      getUser();
+      _futureUser = getUser();
     });
+  }
+
+  Future<void> _openExternalUri(Uri uri) async {
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open this link.')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         leading: const AppBackButton(),
         title: const Text('Menu'),
       ),
@@ -102,7 +111,7 @@ class _DrawerPageState extends State<DrawerPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  user.name ?? 'User',
+                                  user.name,
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium
@@ -166,6 +175,27 @@ class _DrawerPageState extends State<DrawerPage> {
                 label: 'Privacy Policy',
                 icons: SvgPicture.asset(AppIcons.dashboardIcon),
                 trailing: SvgPicture.asset(AppIcons.right),
+                onTap: () => _openExternalUri(
+                  Uri.parse(
+                    'https://eazysupplies.com/pages?name=website-policy',
+                  ),
+                ),
+              ),
+              AppSettingsListTile(
+                label: 'Request Account Deletion',
+                trailing: SvgPicture.asset(AppIcons.right),
+                icons: SvgPicture.asset(AppIcons.profileLogout),
+                onTap: () => _openExternalUri(
+                  Uri(
+                    scheme: 'mailto',
+                    path: 'info@eazysupplies.com',
+                    queryParameters: const {
+                      'subject': 'EazySupplies account deletion request',
+                      'body':
+                          'Please permanently delete my EazySupplies account and associated personal data. My registered email or phone is: ',
+                    },
+                  ),
+                ),
               ),
               AppSettingsListTile(
                 label: 'Contact Us',
@@ -204,7 +234,7 @@ class _DrawerPageState extends State<DrawerPage> {
 
   // Widget build(BuildContext context) {
   //   return Scaffold(
-  //     appBar: AppBar(
+  //     appBar: ShoppingAppBar(
   //       leading: const AppBackButton(),
   //       title: const Text('Menu'),
   //     ),

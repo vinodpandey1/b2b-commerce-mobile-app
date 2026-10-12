@@ -1,3 +1,4 @@
+import 'package:EazySupplies/core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/constants/apiClients.dart';
 import 'package:flutter/material.dart';
 import 'package:EazySupplies/core/constants/api_config.dart';
@@ -35,7 +36,11 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
   Future<void> fetchCategoryProducts() async {
     try {
       final response = await ApiClient.dio.get(ApiConfig.products,
-          queryParameters: {'status': 1, 'category_ids': widget.categoryId, 'paginate': 100});
+          queryParameters: {
+            'status': 1,
+            'category_ids': widget.categoryId,
+            'paginate': 100
+          });
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'] ?? [];
@@ -95,7 +100,7 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: ShoppingAppBar(
         title: Text(widget.categoryName),
         leading: const AppBackButton(),
       ),
@@ -124,7 +129,10 @@ class _CategoryProductPageState extends State<CategoryProductPage> {
                               crossAxisCount: crossAxisCount,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 16,
-                              childAspectRatio: 0.68,
+                              mainAxisExtent: 460 *
+                                  MediaQuery.textScalerOf(context)
+                                      .scale(1)
+                                      .clamp(1, 2),
                             ),
                             itemBuilder: (context, index) {
                               return ProductTileSquare(data: products[index]);

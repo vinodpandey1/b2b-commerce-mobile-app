@@ -1,241 +1,99 @@
-import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:EazySupplies/core/routes/app_routes.dart';
-
 import '../../../core/components/network_image.dart';
-import '../../../core/constants/constants.dart';
-import '../../../core/utils/image_utils.dart';
+import '../../../core/components/quantity_stepper.dart';
+import '../../../core/utils/product_image_url.dart';
 
 class SingleCartItemTile extends StatelessWidget {
-  const SingleCartItemTile({
-    super.key,
-    required this.productId,
-    required this.name,
-    required this.quantity,
-    required this.price,
-    required this.imageUrl,
-    required this.onQuantityChanged,
-    required this.onRemove,
-  });
-
-  final String productId;
-  final String name;
-  final int quantity;
+  const SingleCartItemTile(
+      {super.key,
+      required this.productId,
+      required this.name,
+      required this.quantity,
+      required this.price,
+      required this.imageUrl,
+      required this.onQuantityChanged,
+      required this.onRemove,
+      this.maximum = 100,
+      this.error,
+      this.saving = false,
+      this.onOpen});
+  final String productId, name, imageUrl;
+  final int quantity, maximum;
   final double price;
-  final String imageUrl;
-  final void Function(String productId, int newQty) onQuantityChanged;
-  final void Function(String productId) onRemove;
-  String get prodImg => ImageUtils.getFirstImage(imageUrl);
+  final String? error;
+  final bool saving;
+  final void Function(String, int) onQuantityChanged;
+  final void Function(String) onRemove;
+  final VoidCallback? onOpen;
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDefaults.padding,
-        vertical: AppDefaults.padding / 2,
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              SizedBox(
-                width: Responsive.wp(context, 70 / 4),
-                child: AspectRatio(
-                  aspectRatio: 1 / 1,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.bundleProduct,
-                        arguments: {
-                          'productId': int.parse(productId),
-                        },
-                      );
-                    },
-                    child: NetworkImageWithLoader(
-                      prodImg,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-              ),
-
-              SizedBox(width: Responsive.wp(context, 16 / 4)),
-
-              // Quantity and Name
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: MediaQuery.sizeOf(context).width * 0.5,
-                    child: Text(
-                      name,
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.justify,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.black),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      IconButton(
-                        iconSize: 4.0,
-                        onPressed: () =>
-                            onQuantityChanged(productId, quantity + 1),
-                        icon: SvgPicture.asset(AppIcons.addQuantity),
-                        constraints: const BoxConstraints(),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          '$quantity',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                        ),
-                      ),
-                      IconButton(
-                        iconSize: 4.0,
-                        onPressed: () {
-                          if (quantity > 1) {
-                            onQuantityChanged(productId, quantity - 1);
-                          } else {
-                            onRemove(productId);
-                          }
-                        },
-                        icon: SvgPicture.asset(AppIcons.removeQuantity),
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-              const Spacer(),
-
-              // Price and Delete
-              Column(
-                children: [
-                  IconButton(
-                    constraints: const BoxConstraints(),
-                    onPressed: () => onRemove(productId),
-                    icon: SvgPicture.asset(AppIcons.delete),
-                  ),
-                  SizedBox(height: Responsive.hp(context, 16 / 8)),
-                  Text('₹${(price * quantity).toStringAsFixed(2)}'),
-                ],
-              )
-            ],
-          ),
-          const Divider(thickness: 0.1),
-        ],
-      ),
-    );
+    final urls = buildProductImageUrls(imageUrl);
+    return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: const Color(0xFFE3EAE5)),
+            borderRadius: BorderRadius.circular(16)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            InkWell(
+                onTap: onOpen,
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: urls.isEmpty
+                        ? const Icon(Icons.inventory_2_outlined,
+                            color: Colors.grey)
+                        : NetworkImageWithLoader(urls.first,
+                            fit: BoxFit.contain))),
+            const SizedBox(width: 12),
+            Expanded(
+                child: InkWell(
+                    onTap: onOpen,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(name,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 6),
+                          Text('₹${price.toStringAsFixed(2)} each',
+                              style: const TextStyle(
+                                  color: Color(0xFF66756B), fontSize: 12))
+                        ]))),
+            IconButton(
+                tooltip: 'Remove $name',
+                onPressed: saving ? null : () => onRemove(productId),
+                icon: const Icon(Icons.delete_outline, size: 20)),
+          ]),
+          if (error != null)
+            Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(error!,
+                    style: const TextStyle(
+                        color: Colors.redAccent, fontSize: 13))),
+          const SizedBox(height: 12),
+          Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                QuantityStepper(
+                    value: quantity,
+                    maximum: maximum,
+                    enabled: !saving,
+                    onChanged: (qty) => qty == 0
+                        ? onRemove(productId)
+                        : onQuantityChanged(productId, qty)),
+                Text('₹${(price * quantity).toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 16))
+              ]),
+        ]));
   }
 }
-
-// class SingleCartItemTile extends StatelessWidget {
-//   const SingleCartItemTile({
-//     super.key,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(
-//         horizontal: AppDefaults.padding,
-//         vertical: AppDefaults.padding / 2,
-//       ),
-//       child: Column(
-//         children: [
-//           Row(
-//             children: [
-//               /// Thumbnail
-//               SizedBox(
-//                 width: Responsive.wp(context, 70/4),
-//                 child: AspectRatio(
-//                   aspectRatio: 1 / 1,
-//                   child: NetworkImageWithLoader(
-//                     'https://i.imgur.com/4YEHvGc.png',
-//                     fit: BoxFit.contain,
-//                   ),
-//                 ),
-//               ),
-//               SizedBox(width: Responsive.wp(context, 16/4)),
-
-//               /// Quantity and Name
-//               Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Padding(
-//                     padding: const EdgeInsets.only(left: 8),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Text(
-//                           'Sulphurfree Bura',
-//                           style: Theme.of(context)
-//                               .textTheme
-//                               .bodyLarge
-//                               ?.copyWith(color: Colors.black),
-//                         ),
-//                         Text(
-//                           '570 Ml',
-//                           style: Theme.of(context).textTheme.bodySmall,
-//                         ),
-//                       ],
-//                     ),
-//                   ),
-//                   Row(
-//                     children: [
-//                       IconButton(
-//                         onPressed: () {},
-//                         icon: SvgPicture.asset(AppIcons.addQuantity),
-//                         constraints: const BoxConstraints(),
-//                       ),
-//                       Padding(
-//                         padding: const EdgeInsets.all(8.0),
-//                         child: Text(
-//                           '1',
-//                           style:
-//                               Theme.of(context).textTheme.bodyLarge?.copyWith(
-//                                     fontWeight: FontWeight.bold,
-//                                     color: Colors.black,
-//                                   ),
-//                         ),
-//                       ),
-//                       IconButton(
-//                         onPressed: () {},
-//                         icon: SvgPicture.asset(AppIcons.removeQuantity),
-//                         constraints: const BoxConstraints(),
-//                       ),
-//                     ],
-//                   )
-//                 ],
-//               ),
-//               const Spacer(),
-
-//               /// Price and Delete labelLarge
-//               Column(
-//                 children: [
-//                   IconButton(
-//                     constraints: const BoxConstraints(),
-//                     onPressed: () {},
-//                     icon: SvgPicture.asset(AppIcons.delete),
-//                   ),
-//                   SizedBox(height: Responsive.hp(context, 16/8)),
-//                   const Text('\$20'),
-//                 ],
-//               )
-//             ],
-//           ),
-//           const Divider(thickness: 0.1),
-//         ],
-//       ),
-//     );
-//   }
-// }

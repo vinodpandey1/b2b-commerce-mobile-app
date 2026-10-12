@@ -1,3 +1,4 @@
+import '../../core/components/shopping_app_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'empty_save_page.dart';
@@ -12,6 +13,8 @@ class SavePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const EmptySavePage();
+    return Scaffold(
+        appBar: ShoppingAppBar(title: const Text('Saved products')),
+        body: const EmptySavePage());
   }
 }

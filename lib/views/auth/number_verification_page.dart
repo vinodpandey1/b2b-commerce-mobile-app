@@ -1,3 +1,4 @@
+import '../../core/components/shopping_app_bar.dart';
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,8 @@ class NumberVerificationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: ShoppingAppBar(
+          title: const Text('Verify your number'), showCart: false),
       backgroundColor: AppColors.scaffoldWithBoxBackground,
       body: SafeArea(
         child: Center(

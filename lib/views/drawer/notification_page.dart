@@ -1,201 +1,164 @@
-import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
-import 'package:EazySupplies/core/models/userModel.dart';
-import 'package:EazySupplies/core/constants/apiCall.dart';
+import '../../core/components/shopping_app_bar.dart';
+import '../../core/constants/apiCall.dart';
+import '../../core/constants/apiClients.dart';
+import '../../core/models/userModel.dart';
+import '../../core/routes/app_routes.dart';
+import '../../core/utils/notification_content.dart';
 
 class NotificationListPage extends StatefulWidget {
   const NotificationListPage({super.key});
-
   @override
   State<NotificationListPage> createState() => _NotificationListPageState();
 }
 
 class _NotificationListPageState extends State<NotificationListPage> {
   List<NotificationModel> notifications = [];
-  bool isLoading = true;
-  bool hasError = false;
-
+  final Set<int> readIds = {};
+  bool loading = true, failed = false;
   @override
   void initState() {
     super.initState();
-    fetchNotifications();
+    refresh();
   }
 
-  Future<void> fetchNotifications() async {
+  Future<void> refresh() async {
     try {
-      final data = await getNotifications();
-      setState(() {
-        notifications = data;
-        isLoading = false;
-        hasError = false;
-      });
-    } catch (e) {
-      debugPrint('Notification error: $e');
-      setState(() {
-        isLoading = false;
-        hasError = true;
-      });
+      final result = await getNotifications();
+      if (mounted) {
+        setState(() {
+          notifications = result;
+          failed = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => failed = true);
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
+  }
+
+  Future<void> open(NotificationModel notification) async {
+    if (!notification.readStatus && !readIds.contains(notification.id)) {
+      final success = await readNotification(notification.id);
+      if (success && mounted) setState(() => readIds.add(notification.id));
+    }
+    if (!mounted) return;
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) =>
+                NotificationDetailsPage(notification: notification)));
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-      ),
-      body: _buildBody(),
-    );
-  }
-
-  Widget _buildBody() {
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (hasError) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Failed to load notifications'),
-            SizedBox(height: Responsive.hp(context, 12 / 8)),
-            ElevatedButton(
-              onPressed: fetchNotifications,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (notifications.isEmpty) {
-      return Center(
-        child: Text(
-          'No notifications',
-          style: TextStyle(fontSize: Responsive.sp(context, 16)),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: fetchNotifications,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          return NotificationTile(notification: notifications[index]);
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Scaffold(
+      appBar: ShoppingAppBar(title: const Text('Notifications')),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : failed
+              ? Center(
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  const Text('We could not load your notifications.'),
+                  TextButton(onPressed: refresh, child: const Text('Try again'))
+                ]))
+              : notifications.isEmpty
+                  ? const Center(child: Text('You’re all caught up'))
+                  : RefreshIndicator(
+                      onRefresh: refresh,
+                      child: ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: notifications.length,
+                          itemBuilder: (context, index) {
+                            final n = notifications[index];
+                            final read = n.readStatus || readIds.contains(n.id);
+                            return Card(
+                                elevation: 0,
+                                margin: const EdgeInsets.only(bottom: 12),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    side: const BorderSide(
+                                        color: Color(0xFFE3EAE5))),
+                                child: ListTile(
+                                    contentPadding: const EdgeInsets.all(16),
+                                    leading: CircleAvatar(
+                                        backgroundColor: read
+                                            ? const Color(0xFFF0F4F1)
+                                            : const Color(0xFFE0F4E8),
+                                        child: Icon(
+                                            read
+                                                ? Icons.notifications_none
+                                                : Icons
+                                                    .notifications_active_outlined,
+                                            color: const Color(0xFF168345))),
+                                    title: Text(n.name,
+                                        style: TextStyle(
+                                            fontWeight: read
+                                                ? FontWeight.w500
+                                                : FontWeight.w700)),
+                                    subtitle: Padding(
+                                        padding: const EdgeInsets.only(top: 6),
+                                        child: Text(notificationText(n.remarks),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis)),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () => open(n)));
+                          })));
 }
 
-class NotificationTile extends StatelessWidget {
+class NotificationDetailsPage extends StatefulWidget {
+  const NotificationDetailsPage({super.key, required this.notification});
   final NotificationModel notification;
+  @override
+  State<NotificationDetailsPage> createState() =>
+      _NotificationDetailsPageState();
+}
 
-  const NotificationTile({
-    super.key,
-    required this.notification,
-  });
+class _NotificationDetailsPageState extends State<NotificationDetailsPage> {
+  bool opening = false;
+  Future<void> openOrder(int id) async {
+    if (opening) return;
+    setState(() => opening = true);
+    try {
+      final response = await ApiClient.dio
+          .get('/orders/filter', queryParameters: {'orderId': id});
+      final order =
+          Order.fromJson(Map<String, dynamic>.from(response.data['data']));
+      if (!mounted) return;
+      await Navigator.pushNamed(context, AppRoutes.orderView, arguments: order);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'We could not open this order. Please try again from My orders.')));
+      }
+    } finally {
+      if (mounted) setState(() => opening = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isRead = notification.readStatus;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: isRead ? 1 : 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: isRead
-            ? null
-            : () async {
-                final success = await readNotification(notification.id);
-                if (success) {
-                  // update UI / refresh list
-                }
-              },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              /// Unread indicator (SAFE)
-              Container(
-                width: Responsive.wp(context, 4 / 4),
-                height: Responsive.hp(context, 48 / 8), // ✅ FIXED height
-                decoration: BoxDecoration(
-                  color: isRead ? Colors.transparent : Colors.blue,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              SizedBox(width: Responsive.wp(context, 12 / 4)),
-
-              /// Icon
-              CircleAvatar(
-                radius: 18,
-                backgroundColor:
-                    isRead ? Colors.grey.shade200 : Colors.blue.shade100,
-                child: Icon(
-                  Icons.notifications,
-                  size: 18,
-                  color: isRead ? Colors.grey : Colors.blue,
-                ),
-              ),
-              SizedBox(width: Responsive.wp(context, 12 / 4)),
-
-              /// Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      notification.name,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight:
-                                isRead ? FontWeight.normal : FontWeight.bold,
-                          ),
-                    ),
-                    if (notification.remarks != null) ...[
-                      SizedBox(height: Responsive.hp(context, 6 / 8)),
-                      Text(
-                        notification.remarks!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                    SizedBox(height: Responsive.hp(context, 8 / 8)),
-                    Text(
-                      _formatDate(notification.createdAt),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-
-              if (notification.attachment != null)
-                const Icon(Icons.attach_file, size: 18),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final diff = DateTime.now().difference(date);
-
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
-    if (diff.inHours < 24) return '${diff.inHours} hr ago';
-    return '${date.day}/${date.month}/${date.year}';
+    final n = widget.notification;
+    final id = notificationOrderId(n);
+    return Scaffold(
+        appBar: ShoppingAppBar(title: const Text('Notification')),
+        body: ListView(padding: const EdgeInsets.all(20), children: [
+          Text(n.name,
+              style:
+                  const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Text('${n.createdAt.day}/${n.createdAt.month}/${n.createdAt.year}',
+              style: const TextStyle(color: Colors.grey)),
+          const Divider(height: 32),
+          SelectableText(notificationText(n.remarks)),
+          if (id != null) ...[
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+                onPressed: opening ? null : () => openOrder(id),
+                icon: const Icon(Icons.shopping_bag_outlined),
+                label: Text(opening ? 'Opening order…' : 'View order #$id'))
+          ]
+        ]));
   }
 }

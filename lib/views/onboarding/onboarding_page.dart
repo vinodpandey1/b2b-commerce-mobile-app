@@ -1,5 +1,6 @@
 import 'package:EazySupplies/core/utils/responsive.dart';
 import 'package:flutter/material.dart';
+import 'package:EazySupplies/core/constants/app_session.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/constants/constants.dart';
@@ -20,12 +21,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
   late PageController controller;
   List<OnboardingModel> items = OnboardingData.items;
 
-  onPageChange(int value) {
+  void onPageChange(int value) {
     currentPage = value;
     setState(() {});
   }
 
-  _gotoNextPage() {
+  void _gotoNextPage() {
     if (currentPage < items.length - 1) {
       controller.nextPage(
         duration: AppDefaults.duration,
@@ -36,8 +37,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
     }
   }
 
-  _gotoLoginSignUp() {
-    Navigator.pushNamed(context, AppRoutes.introLogin);
+  void _gotoLoginSignUp() async {
+    await AppSession.completeOnboarding();
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, AppRoutes.introLogin);
   }
 
   @override
